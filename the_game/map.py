@@ -1,6 +1,5 @@
 from typing import List
 
-
 class Location:
 
     def __init__(self, row, col):
@@ -20,34 +19,37 @@ class Map:
     TOWER  = 2
     CASTLE = 3
     TRAP = 4
+    BOT = 6
+    SHOP = 9
 
     def __init__(self, filename):
         # create map out of file content
-        self.map = Map._load_map(filename)
+        self.map: List[List[int]] = Map._load_map(filename)
 
     @staticmethod
     def _load_map(filename):
         loaded_map: list[list[int]] = []
         matrix = open(filename, "r")
-        symmetrical = None
 
-        for row in matrix.readlines():
+        lines = matrix.readlines()
+        num_rows = int(lines[0])
+        num_cols = int(lines[1])
+        loaded_map = [[Map.FREE]*num_cols for _ in range(num_rows)]
+
+        map_content = lines[2:]
+        if len(map_content) != num_rows:
+            raise Exception(f"Unexpected number of rows in the map. Expected={num_rows}. Got={len(map_content)}")
+        for row_idx, row in enumerate(map_content):
             row = row.strip()
-            if symmetrical is None:
-                symmetrical = len(row)
-            if symmetrical != len(row):
-                print("the map is not symmetrical")
-                exit()
-            loaded_map.append([])
-            for ch in row:
-                if not ch.isnumeric():
-                    continue
+            if len(row) != num_cols:
+                raise Exception(f"Unexpected number of cols in the map line. Expected={num_cols}. Got={len(row)}")
+            for col_idx, ch in enumerate(row):
                 x = int(ch)
-                loaded_map[-1].append(x)
+                loaded_map[row_idx][col_idx] = x
         matrix.close()
         return loaded_map
 
-    def get_available_location(self, location) -> List[Location]:
+    def get_available_locations(self, location) -> List[Location]:
         result = []
         for loc in [self.north(location), self.east(location), self.south(location), self.west(location)]:
             if not loc is None and self.is_available(loc):
@@ -74,6 +76,24 @@ class Map:
 
     def is_castle(self, location: Location):
         return self.map[location.row][location.col] == Map.CASTLE
+
+    def is_bot(self, location: Location):
+        return  self.map[location.row][location.col] == Map.BOT
+
+    def take_location(self, location: Location, who: int):
+        if self.is_free(location):
+            self.map[location.row][location.col] = who
+        elif self.is_trap(location):
+            print("trap")
+            exit()
+        else:
+            raise RuntimeError(f"{location} was not free: {self.map[location.row][location.col]}")
+
+    def free_location(self, location: Location):
+        if self.is_bot(location):
+            self.map[location.row][location.col] = Map.FREE
+        else:
+            raise RuntimeError(f"{location} was not taken by Bot")
 
     def north(self, location: Location) -> Location|None:
         if location.row > 0:
@@ -130,11 +150,14 @@ def walk_maze(game_map, bot):
         print("You are on an unreachable position")
         return
     print(bot.location)
+    game_map.take_location(bot.location, Map.BOT)
     while not walk_finished:
         loc = bot.location
-        for next_loc in game_map.get_available_location(loc):
+        for next_loc in game_map.get_available_locations(loc):
             if not bot.has_visited(next_loc):
+                game_map.free_location(bot.location)
                 bot.move(next_loc)
+                game_map.take_location(next_loc, Map.BOT)
                 print(next_loc)
                 break
         if game_map.is_trap(bot.location):
@@ -143,15 +166,13 @@ def walk_maze(game_map, bot):
         walk_finished = (loc == bot.location)
     if game_map.get_castle_next_to(bot.location):
         print("I'll destroy this castle")
+        bot.forget()
     else:
         print("Castle not found")
+    game_map.free_location(bot.location)
 
-location =  Location(0, 2)
-location2 =  Location(0, 2)
+if __name__ == "__main__":
+    game_map = Map("terrain.txt")
 
-game_map = Map("maze.txt")
-print(location == location2)
-bot = Bot(Location(1, 0))
-walk_maze(game_map, bot)
-print("++++++++++++++++++++++++++++++++++++++++++++++")
-walk_maze(game_map, bot)
+    bot = Bot(Location(2, 0))
+    walk_maze(game_map, bot)

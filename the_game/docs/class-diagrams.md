@@ -14,6 +14,8 @@ class Map {
 class Location
 
 Goblin --|> Monster
+Ogre --|> Monster
+Spider --|> Monster
 Monster -- Location
 Map -- Location
 
