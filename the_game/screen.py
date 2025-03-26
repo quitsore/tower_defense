@@ -1,5 +1,5 @@
 import pygame
-from map import Map
+from game_map import GameMap
 from monster import Monster
 
 
@@ -20,7 +20,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.is_work = True
         self.FPS = 60
-        self.game_map = Map("terrain.txt")
+        self.game_map = GameMap("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
         self.monster = Monster(0, 0)
@@ -82,19 +82,19 @@ class Game:
         color = None
         for row_idx, row in enumerate(self.game_map.map):
             for col_idx, cell in enumerate(row):
-                if cell == Map.FREE:
+                if cell == GameMap.FREE:
                     self.screen.blit(self.path, (col_idx * 40, row_idx * 40))
-                elif cell == Map.TERRAIN:
+                elif cell == GameMap.TERRAIN:
                     self.screen.blit(self.grass, (col_idx * 40, row_idx * 40))
-                elif cell == Map.TOWER:
+                elif cell == GameMap.TOWER:
                     self.screen.blit(self.placement, (col_idx * 40, row_idx * 40))
-                elif cell == Map.CASTLE:
+                elif cell == GameMap.CASTLE:
                     color = pygame.Color(255, 215, 0, 255)
                     pygame.draw.rect(self.screen, color,
                                      pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
                 elif cell == 8:
                     self.screen.blit(self.tower_shop, (col_idx * 32, 160))
-                if cell == Map.BOT:
+                if cell == GameMap.BOT:
                     color = pygame.Color(93, 93, 93, 255)
                     pygame.draw.rect(self.screen, color,
                                      pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
