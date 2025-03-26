@@ -20,7 +20,6 @@ class Map:
     CASTLE = 3
     TRAP = 4
     BOT = 6
-    SHOP = 9
 
     def __init__(self, filename):
         # create map out of file content
