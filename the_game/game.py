@@ -1,6 +1,7 @@
 import pygame
-from game_map import GameMap
+from map import Map, Location, MapView
 from monster import Monster
+from the_game.scene import Scene
 
 
 class Game:
@@ -20,10 +21,11 @@ class Game:
         self.clock = pygame.time.Clock()
         self.is_work = True
         self.FPS = 60
-        self.game_map = GameMap("terrain.txt")
+        self.game_map = Map("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
-        self.monster = Monster(0, 0)
+        self.monster = Monster(Location(1, 0), MapView(self.game_map, Location(1, 0), width=3, height=3))
+        self.monster2 = Monster(Location(5, 5), MapView(self.game_map, Location(5, 5), width=3, height=3))
 
     def draw_cursor(self, x, y):
         pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 20, 1)
@@ -47,15 +49,15 @@ class Game:
         # draw cursor
 
         self.monster.draw(self.screen)
+        self.monster2.draw(self.screen)
         # draw side panel
-
 
         self.cursorPX, self.curserPY = pygame.mouse.get_pos()
         self.draw_cursor(self.cursorPX, self.curserPY)
 
         # show fps
         self.show_fps()
-        pygame.display.flip()
+        #pygame.display.flip()
         pygame.display.update()
 
     def check_events(self):
@@ -68,36 +70,41 @@ class Game:
                 btn = pygame.mouse
                 print("x = {}, y = {}".format(pos[0], pos[1]))
 
+    def action(self):
+        self.monster.action()
+        self.monster2.action()
+
     def run(self):
         while self.is_work:
             self.check_events()
+            self.action()
             self.draw()
             self.clock.tick(self.FPS)
-
-    def _draw_text(self, text, font, text_col, x, y):
-        img = font.render(text, True, text_col)
-        self.screen.blit(img, (x, y))
 
     def draw_map(self):
         color = None
         for row_idx, row in enumerate(self.game_map.map):
             for col_idx, cell in enumerate(row):
-                if cell == GameMap.FREE:
+                if cell == Map.FREE:
                     self.screen.blit(self.path, (col_idx * 40, row_idx * 40))
-                elif cell == GameMap.TERRAIN:
+                elif cell == Map.TERRAIN:
                     self.screen.blit(self.grass, (col_idx * 40, row_idx * 40))
-                elif cell == GameMap.TOWER:
+                elif cell == Map.TOWER:
                     self.screen.blit(self.placement, (col_idx * 40, row_idx * 40))
-                elif cell == GameMap.CASTLE:
+                elif cell == Map.CASTLE:
                     color = pygame.Color(255, 215, 0, 255)
                     pygame.draw.rect(self.screen, color,
                                      pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
                 elif cell == 8:
                     self.screen.blit(self.tower_shop, (col_idx * 32, 160))
-                if cell == GameMap.BOT:
+                if cell == Map.BOT:
                     color = pygame.Color(93, 93, 93, 255)
                     pygame.draw.rect(self.screen, color,
                                      pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
+
+    def _draw_text(self, text, font, text_col, x, y):
+        img = font.render(text, True, text_col)
+        self.screen.blit(img, (x, y))
 
     def draw_shop(self):
         self._draw_text("Shop", self.text_font, (255, 255, 255), 1050, 50)
