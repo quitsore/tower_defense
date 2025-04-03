@@ -14,13 +14,13 @@ class State(enum.IntEnum):
 
 class Monster:
 
-    def __init__(self, loc: Location, map_view: MapView):
+    def __init__(self, loc: Location, map_view: MapView, color):
         self.loc = loc
         self.next_loc = None
-        self.speed = 2
+        self.speed = 1
         self.offset = Offset()
         self.map_view = map_view
-        self.color = pygame.Color(255, 0, 0, 255)
+        self.color = color
         self.state = State.SPAWNING
         self.trace = []
         self.state_counter = 0

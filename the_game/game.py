@@ -24,8 +24,10 @@ class Game:
         self.game_map = Map("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
-        self.monster = Monster(Location(1, 0), MapView(self.game_map, Location(1, 0), width=3, height=3))
-        self.monster2 = Monster(Location(5, 5), MapView(self.game_map, Location(5, 5), width=3, height=3))
+        self.monster = Monster(Location(1, 0), MapView(self.game_map, Location(1, 0), width=3, height=3),
+                               color=pygame.Color(255, 0, 0))
+        self.monster2 = Monster(Location(5, 5), MapView(self.game_map, Location(5, 5), width=3, height=3),
+                                color=pygame.Color(0, 255, 0))
 
     def draw_cursor(self, x, y):
         pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 20, 1)
@@ -57,7 +59,7 @@ class Game:
 
         # show fps
         self.show_fps()
-        #pygame.display.flip()
+        # pygame.display.flip()
         pygame.display.update()
 
     def check_events(self):
