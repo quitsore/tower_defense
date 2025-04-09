@@ -1,6 +1,8 @@
 import pygame
-from map import Map, Location, MapView
+from map import Map, Location, MapView, Tag
 from monster import Monster
+from the_game.castle import Castle
+from the_game.map import Entity
 from the_game.scene import Scene
 
 
@@ -24,10 +26,11 @@ class Game:
         self.game_map = Map("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
-        self.monster = Monster(Location(1, 0), MapView(self.game_map, Location(1, 0), width=3, height=3),
+        self.monster = Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
                                color=pygame.Color(255, 0, 0))
-        self.monster2 = Monster(Location(5, 5), MapView(self.game_map, Location(5, 5), width=3, height=3),
+        self.monster2 = Monster(map_view=MapView(self.game_map, Location(5, 5), width=3, height=3),
                                 color=pygame.Color(0, 255, 0))
+        self.castle = Castle(MapView(self.game_map, Location(1, 22), width=1, height=1), color=pygame.Color(255, 215, 0))
 
     def draw_cursor(self, x, y):
         pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 20, 1)
@@ -75,6 +78,9 @@ class Game:
     def action(self):
         self.monster.action()
         self.monster2.action()
+        self.castle.action()
+        if self.castle.is_destroyed():
+            self.is_work = False
 
     def run(self):
         while self.is_work:
@@ -82,24 +88,23 @@ class Game:
             self.action()
             self.draw()
             self.clock.tick(self.FPS)
+        print("Game over")
 
     def draw_map(self):
         color = None
         for row_idx, row in enumerate(self.game_map.map):
             for col_idx, cell in enumerate(row):
-                if cell == Map.FREE:
+                if cell.tag == Tag.FREE:
                     self.screen.blit(self.path, (col_idx * 40, row_idx * 40))
-                elif cell == Map.TERRAIN:
+                elif cell.tag == Tag.TERRAIN:
                     self.screen.blit(self.grass, (col_idx * 40, row_idx * 40))
-                elif cell == Map.TOWER:
+                elif cell.tag == Tag.TOWER:
                     self.screen.blit(self.placement, (col_idx * 40, row_idx * 40))
-                elif cell == Map.CASTLE:
-                    color = pygame.Color(255, 215, 0, 255)
-                    pygame.draw.rect(self.screen, color,
-                                     pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
-                elif cell == 8:
+                elif cell.tag == Tag.CASTLE:
+                    self.castle.draw(self.screen)
+                elif cell.tag == 8:
                     self.screen.blit(self.tower_shop, (col_idx * 32, 160))
-                if cell == Map.BOT:
+                if cell.tag == Entity.MONSTER:
                     color = pygame.Color(93, 93, 93, 255)
                     pygame.draw.rect(self.screen, color,
                                      pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
