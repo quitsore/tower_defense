@@ -1,8 +1,12 @@
 import pygame
 import enum
+import logging
 from map import Location, Offset, Entity
 from the_game.castle import Castle
 from the_game.map import MapView
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class State(enum.IntEnum):
@@ -14,10 +18,11 @@ class State(enum.IntEnum):
 
 class Monster:
 
-    def __init__(self, map_view: MapView, color):
+    def __init__(self, map_view: MapView, color, name):
         self.entity = Entity.MONSTER
+        self.name = name
         self.next_loc = None
-        self.speed = 4
+        self.speed = 1
         self.offset = Offset()
         self.map_view = map_view
         self.map_view.register(self)
@@ -26,15 +31,19 @@ class Monster:
         self.trace = []
         self.state_counter = 0
         self.damage = 5
-        self.attack_delay = 100
+        self.health = 10
+        self.attack_delay = 30
 
     def _transit(self, new_state: State):
         self.state = new_state
         self.state_counter = -1
 
+    def location(self):
+        return self.map_view.center
+
     def action(self):
         self.state_counter += 1
-        loc = self.map_view.center
+        loc = self.location()
         if self.state == State.SPAWNING:
             self._transit(State.SEARCHING)
         elif self.state == State.SEARCHING:
@@ -55,21 +64,22 @@ class Monster:
                 self.offset = Offset()
         elif self.state == State.MOVING:
             if abs(self.offset.dx) + self.speed >= 40 or abs(self.offset.dy) + self.speed >= 40:
-                self.trace.append(self.map_view.center)
+                self.trace.append(self.location())
                 self.map_view.relocate(self.next_loc)
                 self.next_loc = None
                 self._transit(State.SEARCHING)
             else:
                 cell_offset = self.next_loc - loc
                 self.offset = cell_offset * self.state_counter * self.speed
-                print(f"offset = {self.offset}")
+                logger.debug(f"offset = {self.offset}")
         elif self.state == State.HITTING:
             castle = self.map_view.get_castle(self.next_loc)
-            castle.get_hit(self.damage)
+            if self.state_counter % self.attack_delay == 0:
+                castle.get_hit(self.damage)
 
     def draw(self, screen):
         color = self.color
-        loc = self.map_view.center
+        loc = self.location()
         if self.state == State.SPAWNING:
             # self.scene.get_coordinate(self.loc)
             y = loc.row * 40
@@ -86,7 +96,7 @@ class Monster:
             x = loc.col * 40 + self.offset.dx
             pygame.draw.rect(screen, self.color, pygame.Rect(x, y, 40, 40))
         elif self.state == State.HITTING:
-            if self.state_counter % 2 == 0:
+            if self.state_counter % self.attack_delay == 0:
                 color = (255, 255, 255)
             else:
                 color = (255, 0, 0)
@@ -100,3 +110,6 @@ class Monster:
             return True
         else:
             return False
+
+    def __str__(self):
+        return f"monster: {self.name}, location: {self.location()}, offset: {self.offset}, health: {self.health}, entity: {self.entity}"

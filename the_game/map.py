@@ -169,15 +169,15 @@ class MapView:
     def is_free(self, loc: Location):
         return self.in_sight(loc) and self.map.is_free(loc)
 
-    def find(self, tag: int) -> Location | None:
-        # bot_location = self.map_view.find(GameMap.BOT)
+    def find(self, entity: Entity) -> List[Any]:
+        targets = []
         for i in range(self.height):
             loc = Location(self.center.row - self.height // 2 + i, self.center.col - self.width // 2)
             for j in range(self.width):
-                if self.in_sight(loc) and self.map.cell(loc) == tag:
-                    return loc
-                else:
-                    loc = loc.east()
+                if self.in_sight(loc):
+                    targets += (self.map.cell(loc).get_entity(entity))
+                loc = loc.east()
+        return targets
 
     def is_castle(self, loc):
         return self.in_sight(loc) and self.map.is_castle(loc)

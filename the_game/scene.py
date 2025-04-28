@@ -7,7 +7,6 @@ class Scene:
     def __init__(self):
         self.path = pygame.image.load("../resources/path-40x40.png").convert()
         self.grass = pygame.image.load("../resources/grass-40x40.png").convert()
-        self.placement = pygame.image.load("../resources/brick-40x40.png").convert()
         self.tower_shop = pygame.image.load("../resources/tower-32x40.png").convert()
         self.width, self.height = 1280, 720
         self.screen = pygame.display.set_mode((self.width, self.height))

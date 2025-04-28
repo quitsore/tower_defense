@@ -3,7 +3,11 @@ from map import Map, Location, MapView, Tag
 from monster import Monster
 from the_game.castle import Castle
 from the_game.map import Entity
-from the_game.scene import Scene
+from tower import Tower
+import logging
+
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 class Game:
@@ -27,10 +31,11 @@ class Game:
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
         self.monster = Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
-                               color=pygame.Color(255, 0, 0))
-        self.monster2 = Monster(map_view=MapView(self.game_map, Location(5, 5), width=3, height=3),
-                                color=pygame.Color(0, 255, 0))
+                               color=pygame.Color(255, 0, 0), name="Vasja")
+        self.monster2 = Monster(map_view=MapView(self.game_map, Location(1, 4), width=3, height=3),
+                                color=pygame.Color(0, 255, 0), name="Petja")
         self.castle = Castle(MapView(self.game_map, Location(1, 22), width=1, height=1), color=pygame.Color(255, 215, 0))
+        self.tower = Tower(map_view=MapView(self.game_map, Location(2, 8), width=3, height=3), color=pygame.Color(255, 16, 240))
 
     def draw_cursor(self, x, y):
         pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 20, 1)
@@ -55,6 +60,7 @@ class Game:
 
         self.monster.draw(self.screen)
         self.monster2.draw(self.screen)
+        self.tower.draw(self.screen)
         # draw side panel
 
         self.cursorPX, self.curserPY = pygame.mouse.get_pos()
@@ -78,6 +84,7 @@ class Game:
     def action(self):
         self.monster.action()
         self.monster2.action()
+        self.tower.action()
         self.castle.action()
         if self.castle.is_destroyed():
             self.is_work = False
