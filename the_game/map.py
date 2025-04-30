@@ -3,19 +3,20 @@ import enum
 from typing import List, Self, Any
 
 
-class Offset:
 
-    def __init__(self, dx=0, dy=0):
-        self.dx = dx
-        self.dy = dy
+class LocationDiff:
+
+    def __init__(self, dcol=0, drow=0):
+        self.dcol = dcol
+        self.drow = drow
 
     def __mul__(self, factor) -> Self:
-        self.dx = self.dx * factor
-        self.dy = self.dy * factor
+        self.dcol = self.dcol * factor
+        self.drow = self.drow * factor
         return self
 
     def __repr__(self):
-        return f"dy={self.dy}, dx={self.dx}"
+        return f"drow={self.drow}, dcol={self.dcol}"
 
 
 class Location:
@@ -45,8 +46,8 @@ class Location:
     def directions(self) -> List[Self]:
         return [self.north(), self.east(), self.south(), self.west()]
 
-    def __sub__(self, other: Self) -> Offset:
-        return Offset(dy=self.row - other.row, dx=self.col - other.col)
+    def __sub__(self, other: Self) -> LocationDiff:
+        return LocationDiff(drow=self.row - other.row, dcol=self.col - other.col)
 
 
 class Tag(enum.IntEnum):
@@ -199,16 +200,22 @@ class MapView:
 
 
 if __name__ == "__main__":
-    the_map = Map([[1, 1, 1, 1],
-                   [6, 0, 0, 1],
-                   [1, 1, 6, 1],
-                   [1, 2, 0, 0]])
+    class DummyCastle:
+        def __init__(self):
+            self.entity = Entity.CASTLE
+
+    the_map = Map([[Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.TERRAIN)],
+                   [Cell(Tag.TOWER), Cell(Tag.FREE), Cell(Tag.FREE), Cell(Tag.TERRAIN)],
+                   [Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.CASTLE), Cell(Tag.TERRAIN)],
+                   [Cell(Tag.TERRAIN), Cell(Tag.TOWER), Cell(Tag.FREE), Cell(Tag.FREE)]])
+    view_castle = MapView(the_map, Location(2, 2), 1, 1)
+    view_castle.register(DummyCastle())
     view = MapView(the_map, Location(3, 1), 3, 3)
-    assert view.find(6) == Location(2, 2)
+    assert view.find(Entity.CASTLE)
 
     l1 = Location(1, 0)
     l2 = Location(1, 1)
     diff1 = l2 - l1
-    assert diff1.dx == 1 and diff1.dy == 0
+    assert diff1.dcol == 1 and diff1.drow == 0
     diff2 = l1 - l2
-    assert diff2.dx == -1 and diff2.dy == 0
+    assert diff2.dcol == -1 and diff2.drow == 0

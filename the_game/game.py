@@ -1,11 +1,13 @@
+import math
+
 import pygame
 from map import Map, Location, MapView, Tag
 from monster import Monster
 from the_game.castle import Castle
 from the_game.map import Entity
+from the_game.scene import Scene
 from tower import Tower
 import logging
-
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -26,16 +28,22 @@ class Game:
         self.cursorPX, self.curserPY = self.width // 2, self.height // 2
         self.clock = pygame.time.Clock()
         self.is_work = True
+        self.prep_angle = 270
+        self.prep_time = 45
         self.FPS = 60
         self.game_map = Map("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
+        self.scene = Scene(game_map=self.game_map, cell_width=40, cell_height=40)
         self.monster = Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
-                               color=pygame.Color(255, 0, 0), name="Vasja")
+                               color=pygame.Color(255, 0, 0), name="Vasja", scene=self.scene)
         self.monster2 = Monster(map_view=MapView(self.game_map, Location(1, 4), width=3, height=3),
-                                color=pygame.Color(0, 255, 0), name="Petja")
-        self.castle = Castle(MapView(self.game_map, Location(1, 22), width=1, height=1), color=pygame.Color(255, 215, 0))
-        self.tower = Tower(map_view=MapView(self.game_map, Location(2, 8), width=3, height=3), color=pygame.Color(255, 16, 240))
+                                color=pygame.Color(0, 255, 0), name="Petja", scene=self.scene)
+        self.castle = Castle(MapView(self.game_map, Location(1, 22), width=1, height=1),
+                             color=pygame.Color(255, 215, 0))
+        self.tower = Tower(map_view=MapView(self.game_map, Location(2, 8), width=3, height=3),
+                           color=pygame.Color(255, 16, 240), scene=self.scene)
+        self.bullets = []
 
     def draw_cursor(self, x, y):
         pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 20, 1)
@@ -61,6 +69,8 @@ class Game:
         self.monster.draw(self.screen)
         self.monster2.draw(self.screen)
         self.tower.draw(self.screen)
+        for bullet in self.bullets:
+            bullet.draw(self.screen)
         # draw side panel
 
         self.cursorPX, self.curserPY = pygame.mouse.get_pos()
@@ -84,7 +94,11 @@ class Game:
     def action(self):
         self.monster.action()
         self.monster2.action()
-        self.tower.action()
+        bullet = self.tower.action()
+        if bullet:
+            self.bullets.append(bullet)
+        for bullet in self.bullets:
+            bullet.action()
         self.castle.action()
         if self.castle.is_destroyed():
             self.is_work = False
@@ -121,12 +135,18 @@ class Game:
         self.screen.blit(img, (x, y))
 
     def draw_shop(self):
+        start_angle = math.radians(90)
+        end_angle = math.radians(self.prep_angle)
         self._draw_text("Shop", self.text_font, (255, 255, 255), 1050, 50)
         self._draw_text("Archer", self.text_font, (255, 255, 255), 1030, 200)
         self._draw_text("Mortar", self.text_font, (255, 255, 255), 1150, 200)
         self._draw_text("Ballista", self.text_font, (255, 255, 255), 1030, 350)
         self._draw_text("Freezer", self.text_font, (255, 255, 255), 1150, 350)
-        pygame.draw.line(self.screen, (255, 255, 255), (1024, 100), (1280, 100))
+        pygame.draw.line(self.screen, (255, 255, 255), (1000, 100), (1280, 100), 3)
+        pygame.draw.line(self.screen, (255, 255, 255), (1000, 400), (1280, 400), 3)
+        self._draw_text(f"{self.prep_time}", self.text_font, (255, 255, 255), 1050, 550)
+        pygame.draw.arc(self.screen, (255, 255, 255), pygame.Rect(1050, 550, 60, 60), start_angle, end_angle, 3)
+
 
     def show_fps(self):
         fps = int(self.clock.get_fps())

@@ -1,5 +1,7 @@
 import enum
 import pygame
+
+from the_game.bullet import Bullet
 from the_game.map import MapView, Entity
 import logging
 
@@ -10,17 +12,21 @@ logging.basicConfig(level=logging.DEBUG)
 class State(enum.IntEnum):
     SEARCHING = 1
     SHOOTING = 2
+    RELOADING = 3
 
 
 class Tower:
-    def __init__(self, map_view: MapView, color):
+    def __init__(self, map_view: MapView, color, scene):
         self.state_counter = 0
         self.map_view = map_view
         self.color = color
+        self.scene = scene
         self.state = State.SEARCHING
         self.target = None
+        self.reloading_counter = 0
+        self.reloading_duration = 50
 
-    def action(self):
+    def action(self) -> Bullet|None:
         self.state_counter += 1
         if self.state == State.SEARCHING:
             monsters = self.map_view.find(Entity.MONSTER)
@@ -29,12 +35,24 @@ class Tower:
                 self.state = State.SHOOTING
                 self.target = monsters[0]
                 logger.debug(f"Found monster: {self.target}")
+            return None
         elif self.state == State.SHOOTING:
             if self.map_view.in_sight(self.target.location()):
                 logger.debug(f"Shooting monster: {self.target}")
+                self.state = State.RELOADING
+                # shoot
+                return Bullet(self.map_view, self.target, self.scene, self.target)
             else:
                 self.target = None
                 self.state = State.SEARCHING
+                return None
+        elif self.state == State.RELOADING:
+            self.reloading_counter += 1
+            if self.reloading_counter == self.reloading_duration:
+                self.reloading_counter = 0
+                self.state = State.SHOOTING
+            return None
+        return None
 
 
     def draw(self, screen):

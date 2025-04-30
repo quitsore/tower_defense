@@ -1,9 +1,10 @@
 import pygame
 import enum
 import logging
-from map import Location, Offset, Entity
+from map import Location, LocationDiff, Entity
 from the_game.castle import Castle
 from the_game.map import MapView
+from the_game.scene import Scene, Offset, Point
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -18,12 +19,14 @@ class State(enum.IntEnum):
 
 class Monster:
 
-    def __init__(self, map_view: MapView, color, name):
+    def __init__(self, scene: Scene, map_view: MapView, color, name):
         self.entity = Entity.MONSTER
         self.name = name
         self.next_loc = None
-        self.speed = 1
+        self.abs_speed = 1
+        self.speed = Offset()
         self.offset = Offset()
+        self.scene = scene
         self.map_view = map_view
         self.map_view.register(self)
         self.color = color
@@ -34,12 +37,19 @@ class Monster:
         self.health = 10
         self.attack_delay = 30
 
+    def get_hit(self, damage):
+        self.health -= damage
+        logger.info(f"got hit by {damage} points. rest health = {self.health}")
+
     def _transit(self, new_state: State):
         self.state = new_state
         self.state_counter = -1
 
     def location(self):
         return self.map_view.center
+
+    def point(self) -> Point:
+        return self.scene.get_point(self.location(), self.offset)
 
     def action(self):
         self.state_counter += 1
@@ -62,15 +72,17 @@ class Monster:
             else:
                 self.next_loc = next_loc
                 self.offset = Offset()
+                loc_diff = self.next_loc - loc
+                self.speed = Offset(dx=loc_diff.dcol * self.abs_speed, dy=loc_diff.drow*self.abs_speed)
         elif self.state == State.MOVING:
-            if abs(self.offset.dx) + self.speed >= 40 or abs(self.offset.dy) + self.speed >= 40:
+            next_offset = self.offset + self.speed
+            if self.scene.out_of_cell_bounds(next_offset):
                 self.trace.append(self.location())
                 self.map_view.relocate(self.next_loc)
                 self.next_loc = None
                 self._transit(State.SEARCHING)
             else:
-                cell_offset = self.next_loc - loc
-                self.offset = cell_offset * self.state_counter * self.speed
+                self.offset = next_offset
                 logger.debug(f"offset = {self.offset}")
         elif self.state == State.HITTING:
             castle = self.map_view.get_castle(self.next_loc)
