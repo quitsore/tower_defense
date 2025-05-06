@@ -195,8 +195,9 @@ class MapView:
         self.object = obj
         self.map.cell(self.center).objects.append(obj)
 
-
-#                col = self.center + width(j - vision)height(i - vision)
+    def unregister(self, obj):
+        self.map.cell(self.center).objects.remove(obj)
+        self.object = None
 
 
 if __name__ == "__main__":

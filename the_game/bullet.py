@@ -25,7 +25,7 @@ class Bullet:
     def action(self):
         if self.state == State.FLYING:
             next_point = self.calculate_next_point()
-            if next_point.distance_to(self.target.point()) <= 1:
+            if next_point.distance_to(self.target.center_point()) <= (self.abs_speed / 2 + 1):
                 self.state = State.STRIKING
             else:
                 self.point = next_point
@@ -43,7 +43,7 @@ class Bullet:
 
     def calculate_next_point(self) -> Point:
         # given point, target and speed, calculate next point
-        T = self.target.point() + self.scene.cell_center()
+        T = self.target.center_point()
         B = self.point
         Tx = Point(x=T.x, y=B.y)
         TB = T.distance_to(B)

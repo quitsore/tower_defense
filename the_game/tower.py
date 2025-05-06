@@ -40,7 +40,7 @@ class Tower:
                 logger.debug(f"Found monster: {self.target}")
             return None
         elif self.state == State.SHOOTING:
-            if self.map_view.in_sight(self.target.location()):
+            if self.map_view.in_sight(self.target.location()) and self.target.is_alive():
                 logger.debug(f"Shooting monster: {self.target}")
                 self.state = State.RELOADING
                 # shoot

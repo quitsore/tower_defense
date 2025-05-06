@@ -15,6 +15,7 @@ class State(enum.IntEnum):
     SEARCHING = 1
     MOVING = 2
     HITTING = 3
+    DEATH = 4
 
 
 class Monster:
@@ -23,7 +24,7 @@ class Monster:
         self.entity = Entity.MONSTER
         self.name = name
         self.next_loc = None
-        self.abs_speed = 1
+        self.abs_speed = 2
         self.speed = Offset()
         self.offset = Offset()
         self.scene = scene
@@ -34,12 +35,15 @@ class Monster:
         self.trace = []
         self.state_counter = 0
         self.damage = 5
-        self.health = 10
+        self.health = 60
         self.attack_delay = 50
 
     def get_hit(self, damage):
         self.health -= damage
-        logger.info(f"got hit by {damage} points. rest health = {self.health}")
+        logger.info(f"{self.name} got hit by {damage} points. rest health = {self.health}")
+
+    def is_alive(self) -> bool:
+        return True if self.health > 0 else False
 
     def _transit(self, new_state: State):
         self.state = new_state
@@ -51,45 +55,62 @@ class Monster:
     def point(self) -> Point:
         return self.scene.get_point(self.location(), self.offset)
 
+    def center_point(self) -> Point:
+        return self.point() + self.scene.cell_center()
+
     def action(self):
         self.state_counter += 1
         loc = self.location()
         if self.state == State.SPAWNING:
             self._transit(State.SEARCHING)
         elif self.state == State.SEARCHING:
-            next_loc = None
-            for nl in filter(self.has_not_visited, loc.directions()):
-                if self.map_view.is_castle(nl):
-                    next_loc = nl
-                    self._transit(State.HITTING)
-                elif self.map_view.is_free(nl):
-                    next_loc = nl
-                    self._transit(State.MOVING)
-                if next_loc:
-                    break
-            if not next_loc:
-                raise Exception("Unexpectedly no available next location")
+            if not self.is_alive():
+                self._transit(State.DEATH)
             else:
-                self.next_loc = next_loc
-                self.offset = Offset()
-                loc_diff = self.next_loc - loc
-                self.speed = Offset(dx=loc_diff.dcol * self.abs_speed, dy=loc_diff.drow*self.abs_speed)
+                next_loc = None
+                for nl in filter(self.has_not_visited, loc.directions()):
+                    if self.map_view.is_castle(nl):
+                        next_loc = nl
+                        self._transit(State.HITTING)
+                    elif self.map_view.is_free(nl):
+                        next_loc = nl
+                        self._transit(State.MOVING)
+                    if next_loc:
+                        break
+                if not next_loc:
+                    raise Exception("Unexpectedly no available next location")
+                else:
+                    self.next_loc = next_loc
+                    self.offset = Offset()
+                    loc_diff = self.next_loc - loc
+                    self.speed = Offset(dx=loc_diff.dcol * self.abs_speed, dy=loc_diff.drow*self.abs_speed)
         elif self.state == State.MOVING:
-            next_offset = self.offset + self.speed
-            if self.scene.out_of_cell_bounds(next_offset):
-                self.trace.append(self.location())
-                self.map_view.relocate(self.next_loc)
-                self.next_loc = None
-                self._transit(State.SEARCHING)
+            if not self.is_alive():
+                self._transit(State.DEATH)
             else:
-                self.offset = next_offset
-                logger.debug(f"offset = {self.offset}")
+                next_offset = self.offset + self.speed
+                if self.scene.out_of_cell_bounds(next_offset):
+                    self.trace.append(self.location())
+                    self.map_view.relocate(self.next_loc)
+                    self.next_loc = None
+                    self._transit(State.SEARCHING)
+                else:
+                    self.offset = next_offset
+                    logger.debug(f"offset = {self.offset}")
         elif self.state == State.HITTING:
-            castle = self.map_view.get_castle(self.next_loc)
-            if self.state_counter % self.attack_delay == 0:
-                castle.get_hit(self.damage)
+            if not self.is_alive():
+                self._transit(State.DEATH)
+            else:
+                castle = self.map_view.get_castle(self.next_loc)
+                if self.state_counter % self.attack_delay == 0:
+                    castle.get_hit(self.damage)
+        elif self.state == State.DEATH:
+            self.map_view.unregister(self)
+            self.state = None
 
     def draw(self, screen):
+        if not self.is_alive():
+            return
         color = self.color
         loc = self.location()
         if self.state == State.SPAWNING:
