@@ -19,7 +19,7 @@ class Game:
         pygame.init()
         self.width, self.height = 1280, 720
         self.screen = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("game")
+        pygame.display.set_caption("Tower defense")
         self.path = pygame.image.load("../resources/path-40x40.png").convert()
         self.grass = pygame.image.load("../resources/grass-40x40.png").convert()
         self.placement = pygame.image.load("../resources/brick-40x40.png").convert()
@@ -28,8 +28,11 @@ class Game:
         self.cursorPX, self.curserPY = self.width // 2, self.height // 2
         self.clock = pygame.time.Clock()
         self.is_work = True
-        self.prep_angle = 270
-        self.prep_time = 45
+        self.start_angle = math.radians(90)
+        self.end_angle = self.start_angle + math.radians(360)
+        self.speed = math.radians(0.1)
+        self.prep_time = 60
+        self.prep_counter = 0
         self.FPS = 60
         self.game_map = Map("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
@@ -135,8 +138,12 @@ class Game:
         self.screen.blit(img, (x, y))
 
     def draw_shop(self):
-        start_angle = math.radians(90)
-        end_angle = math.radians(self.prep_angle)
+        if self.prep_counter != 0:
+            self.prep_counter -= 1
+        else:
+            self.prep_counter = 60
+            if self.prep_time != 0:
+                self.prep_time -= 1
         self._draw_text("Shop", self.text_font, (255, 255, 255), 1050, 50)
         self._draw_text("Archer", self.text_font, (255, 255, 255), 1030, 200)
         self._draw_text("Mortar", self.text_font, (255, 255, 255), 1150, 200)
@@ -144,9 +151,11 @@ class Game:
         self._draw_text("Freezer", self.text_font, (255, 255, 255), 1150, 350)
         pygame.draw.line(self.screen, (255, 255, 255), (1000, 100), (1280, 100), 3)
         pygame.draw.line(self.screen, (255, 255, 255), (1000, 400), (1280, 400), 3)
-        self._draw_text(f"{self.prep_time}", self.text_font, (255, 255, 255), 1050, 550)
-        pygame.draw.arc(self.screen, (255, 255, 255), pygame.Rect(1050, 550, 60, 60), start_angle, end_angle, 3)
-
+        self._draw_text(f"{self.prep_time}", self.text_font, (255, 255, 255), 1040, 540)
+        if self.end_angle > self.start_angle:
+            pygame.draw.arc(self.screen, (255, 255, 255), pygame.Rect(1025, 525, 60, 60), self.start_angle,
+                            self.end_angle, 3)
+            self.start_angle += self.speed
 
     def show_fps(self):
         fps = int(self.clock.get_fps())

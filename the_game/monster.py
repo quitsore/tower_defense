@@ -35,7 +35,7 @@ class Monster:
         self.state_counter = 0
         self.damage = 5
         self.health = 10
-        self.attack_delay = 30
+        self.attack_delay = 50
 
     def get_hit(self, damage):
         self.health -= damage
@@ -93,17 +93,12 @@ class Monster:
         color = self.color
         loc = self.location()
         if self.state == State.SPAWNING:
-            # self.scene.get_coordinate(self.loc)
-            y = loc.row * 40
-            x = loc.col * 40
-            pygame.draw.rect(screen, self.color, pygame.Rect(x, y, 40, 40))
+            p = self.scene.get_point(self.map_view.center)
+            pygame.draw.rect(screen, self.color, pygame.Rect(p.x, p.y, self.scene.cell_width, self.scene.cell_height))
         elif self.state == State.SEARCHING:
-            # self.scene.get_coordinate(self.loc)
-            y = loc.row * 40
-            x = loc.col * 40
-            pygame.draw.rect(screen, self.color, pygame.Rect(x, y, 40, 40))
+            p = self.scene.get_point(self.map_view.center)
+            pygame.draw.rect(screen, self.color, pygame.Rect(p.x, p.y, self.scene.cell_width, self.scene.cell_height))
         elif self.state == State.MOVING:
-            # self.scene.get_coordinate(self.loc)
             y = loc.row * 40 + self.offset.dy
             x = loc.col * 40 + self.offset.dx
             pygame.draw.rect(screen, self.color, pygame.Rect(x, y, 40, 40))

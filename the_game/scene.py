@@ -39,6 +39,9 @@ class Point:
     def __sub__(self, other) -> Offset:
         return Offset(dx=self.x - other.x, dy=self.y - other.y)
 
+    def __add__(self, offset: Offset) -> Self:
+        return Point(x=self.x + offset.dx, y=self.y + offset.dy)
+
     def distance_to(self, other: Self) -> float:
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
@@ -60,6 +63,9 @@ class Scene:
         self.map = game_map
         self.cell_height = cell_height
         self.cell_width = cell_width
+
+    def cell_center(self) -> Offset:
+        return Offset(self.cell_width / 2, self.cell_height / 2)
 
     def get_point(self, loc: Location, offset=Offset(0, 0)) -> Point:
         y = loc.row * self.cell_height + offset.dy

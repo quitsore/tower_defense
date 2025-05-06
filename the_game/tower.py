@@ -2,7 +2,7 @@ import enum
 import pygame
 
 from the_game.bullet import Bullet
-from the_game.map import MapView, Entity
+from the_game.map import MapView, Entity, Location
 import logging
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,9 @@ class Tower:
         self.reloading_counter = 0
         self.reloading_duration = 50
 
+    def location(self) -> Location:
+        return self.map_view.center
+
     def action(self) -> Bullet|None:
         self.state_counter += 1
         if self.state == State.SEARCHING:
@@ -41,7 +44,7 @@ class Tower:
                 logger.debug(f"Shooting monster: {self.target}")
                 self.state = State.RELOADING
                 # shoot
-                return Bullet(self.map_view, self.target, self.scene, self.target)
+                return Bullet(10, self.location(), self.scene, self.target)
             else:
                 self.target = None
                 self.state = State.SEARCHING
@@ -56,7 +59,5 @@ class Tower:
 
 
     def draw(self, screen):
-        loc = self.map_view.center
-        x = loc.col * 40
-        y = loc.row * 40
-        pygame.draw.rect(screen, self.color, pygame.Rect(x, y, 40, 40))
+        p = self.scene.get_point(self.map_view.center)
+        pygame.draw.rect(screen, self.color, pygame.Rect(p.x, p.y, self.scene.cell_width, self.scene.cell_height))
