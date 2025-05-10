@@ -1,5 +1,6 @@
 import math
 
+import datetime
 import pygame
 from map import Map, Location, MapView, Tag
 from monster import Monster
@@ -31,6 +32,7 @@ class Game:
         self.start_angle = math.radians(90)
         self.end_angle = self.start_angle + math.radians(360)
         self.speed = math.radians(0.1)
+        self.timer = None
         self.prep_time = 60
         self.prep_counter = 0
         self.FPS = 60
@@ -38,15 +40,18 @@ class Game:
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
         self.scene = Scene(game_map=self.game_map, cell_width=40, cell_height=40)
-        self.monster = Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
-                               color=pygame.Color(255, 0, 0), name="Vasja", scene=self.scene)
-        self.monster2 = Monster(map_view=MapView(self.game_map, Location(1, 4), width=3, height=3),
-                                color=pygame.Color(0, 255, 0), name="Petja", scene=self.scene)
+        #        self.monster = Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3), name="Vasja",
+        #                               scene=self.scene)
+        #        self.monster2 = Monster(map_view=MapView(self.game_map, Location(1, 4), width=3, height=3),
+        #                                name="Petja", scene=self.scene)
         self.castle = Castle(MapView(self.game_map, Location(1, 22), width=1, height=1),
                              color=pygame.Color(255, 215, 0))
         self.tower = Tower(map_view=MapView(self.game_map, Location(2, 8), width=3, height=3),
                            color=pygame.Color(255, 16, 240), scene=self.scene)
+        self.time_for_next_monster = datetime.datetime.now()
         self.bullets = []
+        self.monsters = []
+        self.monster_index = 0
 
     def draw_cursor(self, x, y):
         pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 20, 1)
@@ -68,9 +73,8 @@ class Game:
         self.draw_map()
         # draw dynamics
         # draw cursor
-
-        self.monster.draw(self.screen)
-        self.monster2.draw(self.screen)
+        for monster in self.monsters:
+            monster.draw(self.screen)
         self.tower.draw(self.screen)
         for bullet in self.bullets:
             bullet.draw(self.screen)
@@ -95,8 +99,10 @@ class Game:
                 print("x = {}, y = {}".format(pos[0], pos[1]))
 
     def action(self):
-        self.monster.action()
-        self.monster2.action()
+        for monster in self.monsters:
+            monster.action()
+        #        self.monster.action()
+        #        self.monster2.action()
         bullet = self.tower.action()
         if bullet:
             self.bullets.append(bullet)
@@ -109,6 +115,7 @@ class Game:
     def run(self):
         while self.is_work:
             self.check_events()
+            self.spawn_monster()
             self.action()
             self.draw()
             self.clock.tick(self.FPS)
@@ -161,6 +168,15 @@ class Game:
         fps = int(self.clock.get_fps())
         show_fps = self.text_font.render(str(fps), True, (255, 255, 255))
         self.screen.blit(show_fps, (0, 0))
+
+    def spawn_monster(self):
+        if self.time_for_next_monster <= datetime.datetime.now():
+            self.monster_index += 1
+            self.monsters.append(
+                Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
+                        name=str(self.monster_index),
+                        scene=self.scene))
+            self.time_for_next_monster += datetime.timedelta(seconds=2)
 
 
 game = Game()

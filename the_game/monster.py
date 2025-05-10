@@ -15,27 +15,28 @@ class State(enum.IntEnum):
     SEARCHING = 1
     MOVING = 2
     HITTING = 3
-    DEATH = 4
+    END_OF_LIVE = 4
+    DEATH = 5
 
 
 class Monster:
 
-    def __init__(self, scene: Scene, map_view: MapView, color, name):
+    def __init__(self, scene: Scene, map_view: MapView, name):
         self.entity = Entity.MONSTER
         self.name = name
         self.next_loc = None
-        self.abs_speed = 2
+        self.abs_speed = 1
         self.speed = Offset()
         self.offset = Offset()
         self.scene = scene
         self.map_view = map_view
         self.map_view.register(self)
-        self.color = color
+        self.color = (255, 0, 0)
         self.state = State.SPAWNING
         self.trace = []
         self.state_counter = 0
         self.damage = 5
-        self.health = 60
+        self.health = 40
         self.attack_delay = 50
 
     def get_hit(self, damage):
@@ -104,9 +105,11 @@ class Monster:
                 castle = self.map_view.get_castle(self.next_loc)
                 if self.state_counter % self.attack_delay == 0:
                     castle.get_hit(self.damage)
-        elif self.state == State.DEATH:
+        elif self.state == State.END_OF_LIVE:
             self.map_view.unregister(self)
-            self.state = None
+            self.state = State.DEATH
+        elif self.state == State.DEATH:
+            pass
 
     def draw(self, screen):
         if not self.is_alive():
