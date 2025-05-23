@@ -1,8 +1,6 @@
 import math
 
-import pygame
-
-from map import Map, Location, LocationDiff, Cell, Tag
+from map import Location
 from typing import Self
 
 
@@ -45,6 +43,7 @@ class Point:
     def distance_to(self, other: Self) -> float:
         return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
 
+    # TODO: to be removed
     def slope_of_vector_to(self, other: Self) -> float:
         """angle of slope of a vector build by pointing from the self point to the other point, assuming
         that X axis is pointing to the right from the point"""
@@ -59,8 +58,7 @@ class Point:
 
 
 class Scene:
-    def __init__(self, cell_height, cell_width, game_map):
-        self.map = game_map
+    def __init__(self, cell_height, cell_width):
         self.cell_height = cell_height
         self.cell_width = cell_width
 
@@ -76,15 +74,15 @@ class Scene:
         """return true if offset is higher than some cell bounds"""
         return abs(offset.dx) >= self.cell_width or abs(offset.dy) >= self.cell_height
 
+    def get_location(self, point: Point) -> Location:
+        col = point.x // self.cell_width
+        row = point.y // self.cell_height
+        return Location(col=col, row=row)
+
 
 if __name__ == "__main__":
-    # 1. construct game_map from map.py test (copy)
-    the_map = Map([[Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.TERRAIN)],
-                   [Cell(Tag.TOWER), Cell(Tag.FREE), Cell(Tag.FREE), Cell(Tag.TERRAIN)],
-                   [Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.CASTLE), Cell(Tag.TERRAIN)],
-                   [Cell(Tag.TERRAIN), Cell(Tag.TOWER), Cell(Tag.FREE), Cell(Tag.FREE)]])
     # 2. scene = Scene(40, 40, game_map)
-    scene = Scene(40, 40, the_map)
+    scene = Scene(40, 40)
     # 3. test get_point out of location
     assert scene.get_point(Location(1, 1)) == Point(x=40, y=40)
     # 4. test get_point out of location and offset
@@ -98,4 +96,7 @@ if __name__ == "__main__":
     assert point.distance_to(Point(2, 2)) == 1.0
     # 8. slope
     point = Point(0, 0)
-    assert point.slope_of_vector_to(Point(1, 0)) == 0
+    # assert point.slope_of_vector_to(Point(1, 0)) == 0
+    # 9. point to location
+    assert scene.get_location(Point(0, 0)) == Location(0, 0)
+    assert scene.get_location(Point(45, 45)) == Location(1, 1)

@@ -16,23 +16,29 @@ class State(enum.IntEnum):
 
 
 class Tower:
-    def __init__(self, map_view: MapView, color, scene):
+    def __init__(self, map_view: MapView, color, scene, owner):
+        self.entity = Entity.TOWER
         self.state_counter = 0
         self.map_view = map_view
+        self.map_view.register(self)
         self.color = color
         self.scene = scene
+        self.owner = owner
         self.state = State.SEARCHING
         self.target = None
         self.reloading_counter = 0
         self.reloading_duration = 50
 
+    def check_monster_alive(self, m):
+        return m.is_alive()
+
     def location(self) -> Location:
         return self.map_view.center
 
-    def action(self) -> Bullet|None:
+    def action(self) -> Bullet | None:
         self.state_counter += 1
         if self.state == State.SEARCHING:
-            monsters = self.map_view.find(Entity.MONSTER)
+            monsters = list(filter(lambda m: m.is_alive(), self.map_view.find(Entity.MONSTER)))
             if monsters:
                 # find first monster
                 self.state = State.SHOOTING
@@ -56,7 +62,6 @@ class Tower:
                 self.state = State.SHOOTING
             return None
         return None
-
 
     def draw(self, screen):
         p = self.scene.get_point(self.map_view.center)

@@ -5,6 +5,7 @@ import math
 from the_game.map import MapView, Location
 from the_game.scene import Offset, Scene, Point
 
+
 class State(enum.IntEnum):
     FLYING = 1
     STRIKING = 2

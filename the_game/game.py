@@ -1,12 +1,15 @@
-import math
-
 import datetime
 import pygame
 from map import Map, Location, MapView, Tag
 from monster import Monster
-from the_game.castle import Castle
-from the_game.map import Entity
-from the_game.scene import Scene
+from castle import Castle
+from map import Entity
+from scene import Scene, Point
+from player import Player
+from the_game.info_panel import InfoPanel
+from the_game.monster import State
+from the_game.shop import Shop
+from the_game.transaction import Transaction
 from tower import Tower
 import logging
 
@@ -16,6 +19,7 @@ logging.basicConfig(level=logging.DEBUG)
 class Game:
 
     def __init__(self):
+        self.mouse_cursor_image = None
         self.background = None
         pygame.init()
         self.width, self.height = 1280, 720
@@ -24,64 +28,48 @@ class Game:
         self.path = pygame.image.load("../resources/path-40x40.png").convert()
         self.grass = pygame.image.load("../resources/grass-40x40.png").convert()
         self.placement = pygame.image.load("../resources/brick-40x40.png").convert()
-        self.tower_shop = pygame.image.load("../resources/tower-32x40.png").convert()
-        self.text_font = pygame.font.SysFont("Arial", 30)
         self.cursorPX, self.curserPY = self.width // 2, self.height // 2
         self.clock = pygame.time.Clock()
         self.is_work = True
-        self.start_angle = math.radians(90)
-        self.end_angle = self.start_angle + math.radians(360)
-        self.speed = math.radians(0.1)
         self.timer = None
-        self.prep_time = 60
-        self.prep_counter = 0
         self.FPS = 60
         self.game_map = Map("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
-        self.scene = Scene(game_map=self.game_map, cell_width=40, cell_height=40)
-        #        self.monster = Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3), name="Vasja",
-        #                               scene=self.scene)
-        #        self.monster2 = Monster(map_view=MapView(self.game_map, Location(1, 4), width=3, height=3),
-        #                                name="Petja", scene=self.scene)
+        self.player = Player(1000)
+        self.scene = Scene(cell_width=40, cell_height=40)
         self.castle = Castle(MapView(self.game_map, Location(1, 22), width=1, height=1),
                              color=pygame.Color(255, 215, 0))
-        self.tower = Tower(map_view=MapView(self.game_map, Location(2, 8), width=3, height=3),
-                           color=pygame.Color(255, 16, 240), scene=self.scene)
         self.time_for_next_monster = datetime.datetime.now()
         self.bullets = []
         self.monsters = []
+        self.towers = []
         self.monster_index = 0
-
-    def draw_cursor(self, x, y):
-        pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 20, 1)
-        pygame.draw.circle(self.screen, (255, 255, 255), (x, y), 1, 1)
-        pygame.draw.line(self.screen, (255, 255, 255), (x - 24, y),
-                         (x - 16, y))
-        pygame.draw.line(self.screen, (255, 255, 255), (x + 24, y),
-                         (x + 16, y))
-        pygame.draw.line(self.screen, (255, 255, 255), (x, y - 24),
-                         (x, y - 16))
-        pygame.draw.line(self.screen, (255, 255, 255), (x, y + 24),
-                         (x, y + 16))
+        self.wave_value = 50
+        self.mouse_click_point = None
+        self.mouse_point = None
+        self.shop = Shop(self.player)
+        self.text_font = pygame.font.SysFont("Arial", 30)
+        self.info_panel = InfoPanel(self.player)
+        self.transaction = None
 
     def draw(self):
         # clear screen
         self.screen.blit(self.background, (0, 0))
         # draw map
-        self.draw_shop()
         self.draw_map()
-        # draw dynamics
-        # draw cursor
+        self.shop.draw(self.screen)
+        # draw side panel
+        self.info_panel.draw(self.screen)
         for monster in self.monsters:
             monster.draw(self.screen)
-        self.tower.draw(self.screen)
+        for tower in self.towers:
+            tower.draw(self.screen)
         for bullet in self.bullets:
             bullet.draw(self.screen)
-        # draw side panel
-
-        self.cursorPX, self.curserPY = pygame.mouse.get_pos()
-        self.draw_cursor(self.cursorPX, self.curserPY)
+        # draw dynamics
+        if self.transaction:
+            self.transaction.draw(self.screen)
 
         # show fps
         self.show_fps()
@@ -89,37 +77,42 @@ class Game:
         pygame.display.update()
 
     def check_events(self):
-        pygame.mouse.set_visible(False)
+        self.mouse_click_point = None
+        mouse_pos = pygame.mouse.get_pos()
+        self.mouse_point = Point(mouse_pos[0], mouse_pos[1])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.is_work = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                btn = pygame.mouse
-                print("x = {}, y = {}".format(pos[0], pos[1]))
+                btn = pygame.mouse.get_pressed(num_buttons=3)
+                if btn[0]:
+                    self.mouse_click_point = self.mouse_point
+                if btn[2] and self.transaction:
+                    self.transaction = None
+                print(f"mouse clicked: {self.mouse_click_point}")
 
     def action(self):
+        if not self.transaction:
+            item = self.shop.action(self.mouse_click_point)
+            if item:
+                self.transaction = Transaction(item, self.player, self.scene, self.game_map)
+        else:
+            tower = self.transaction.action(self.mouse_point, not self.mouse_click_point is None)
+            if tower:
+                self.towers.append(tower)
+                self.transaction = None
+        self.info_panel.action()
         for monster in self.monsters:
             monster.action()
-        #        self.monster.action()
-        #        self.monster2.action()
-        bullet = self.tower.action()
-        if bullet:
-            self.bullets.append(bullet)
+        for tower in self.towers:
+            bullet = tower.action()
+            if bullet:
+                self.bullets.append(bullet)
         for bullet in self.bullets:
             bullet.action()
         self.castle.action()
         if self.castle.is_destroyed():
             self.is_work = False
-
-    def run(self):
-        while self.is_work:
-            self.check_events()
-            self.spawn_monster()
-            self.action()
-            self.draw()
-            self.clock.tick(self.FPS)
-        print("Game over")
 
     def draw_map(self):
         color = None
@@ -133,36 +126,10 @@ class Game:
                     self.screen.blit(self.placement, (col_idx * 40, row_idx * 40))
                 elif cell.tag == Tag.CASTLE:
                     self.castle.draw(self.screen)
-                elif cell.tag == 8:
-                    self.screen.blit(self.tower_shop, (col_idx * 32, 160))
                 if cell.tag == Entity.MONSTER:
                     color = pygame.Color(93, 93, 93, 255)
                     pygame.draw.rect(self.screen, color,
                                      pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
-
-    def _draw_text(self, text, font, text_col, x, y):
-        img = font.render(text, True, text_col)
-        self.screen.blit(img, (x, y))
-
-    def draw_shop(self):
-        if self.prep_counter != 0:
-            self.prep_counter -= 1
-        else:
-            self.prep_counter = 60
-            if self.prep_time != 0:
-                self.prep_time -= 1
-        self._draw_text("Shop", self.text_font, (255, 255, 255), 1050, 50)
-        self._draw_text("Archer", self.text_font, (255, 255, 255), 1030, 200)
-        self._draw_text("Mortar", self.text_font, (255, 255, 255), 1150, 200)
-        self._draw_text("Ballista", self.text_font, (255, 255, 255), 1030, 350)
-        self._draw_text("Freezer", self.text_font, (255, 255, 255), 1150, 350)
-        pygame.draw.line(self.screen, (255, 255, 255), (1000, 100), (1280, 100), 3)
-        pygame.draw.line(self.screen, (255, 255, 255), (1000, 400), (1280, 400), 3)
-        self._draw_text(f"{self.prep_time}", self.text_font, (255, 255, 255), 1040, 540)
-        if self.end_angle > self.start_angle:
-            pygame.draw.arc(self.screen, (255, 255, 255), pygame.Rect(1025, 525, 60, 60), self.start_angle,
-                            self.end_angle, 3)
-            self.start_angle += self.speed
 
     def show_fps(self):
         fps = int(self.clock.get_fps())
@@ -170,13 +137,30 @@ class Game:
         self.screen.blit(show_fps, (0, 0))
 
     def spawn_monster(self):
-        if self.time_for_next_monster <= datetime.datetime.now():
-            self.monster_index += 1
-            self.monsters.append(
-                Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
-                        name=str(self.monster_index),
-                        scene=self.scene))
-            self.time_for_next_monster += datetime.timedelta(seconds=2)
+        if self.monster_index < self.wave_value:
+            if self.time_for_next_monster <= datetime.datetime.now():
+                self.monster_index += 1
+                self.monsters.append(
+                    Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
+                            name=str(self.monster_index),
+                            scene=self.scene))
+                self.time_for_next_monster += datetime.timedelta(seconds=2)
+
+    def remove_dead_monsters(self):
+        for monster in self.monsters:
+            if monster.state == State.DEATH:
+                self.player.gold += monster.gold_value
+                self.monsters.remove(monster)
+
+    def run(self):
+        while self.is_work:
+            self.check_events()
+            self.remove_dead_monsters()
+            self.spawn_monster()
+            self.action()
+            self.draw()
+            self.clock.tick(self.FPS)
+        print("Game over")
 
 
 game = Game()

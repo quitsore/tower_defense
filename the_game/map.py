@@ -3,7 +3,6 @@ import enum
 from typing import List, Self, Any
 
 
-
 class LocationDiff:
 
     def __init__(self, dcol=0, drow=0):
@@ -121,6 +120,9 @@ class Map:
     def is_castle(self, loc: Location):
         return self.on_map(loc) and self.map[loc.row][loc.col].tag == Tag.CASTLE
 
+    def is_tower_placement(self, loc: Location):
+        return self.on_map(loc) and self.map[loc.row][loc.col].tag == Tag.TOWER
+
     def take_location(self, loc: Location, who: int):
         if self.is_free(loc):
             self.map[loc.row][loc.col] = who
@@ -204,6 +206,7 @@ if __name__ == "__main__":
     class DummyCastle:
         def __init__(self):
             self.entity = Entity.CASTLE
+
 
     the_map = Map([[Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.TERRAIN), Cell(Tag.TERRAIN)],
                    [Cell(Tag.TOWER), Cell(Tag.FREE), Cell(Tag.FREE), Cell(Tag.TERRAIN)],

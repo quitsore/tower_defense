@@ -1,9 +1,8 @@
 import pygame
 import enum
 import logging
-from map import Location, LocationDiff, Entity
-from the_game.castle import Castle
-from the_game.map import MapView
+from map import Entity
+from map import MapView
 from the_game.scene import Scene, Offset, Point
 
 logger = logging.getLogger(__name__)
@@ -36,7 +35,8 @@ class Monster:
         self.trace = []
         self.state_counter = 0
         self.damage = 5
-        self.health = 40
+        self.health = 100
+        self.gold_value = 10
         self.attack_delay = 50
 
     def get_hit(self, damage):
@@ -84,7 +84,7 @@ class Monster:
                     self.next_loc = next_loc
                     self.offset = Offset()
                     loc_diff = self.next_loc - loc
-                    self.speed = Offset(dx=loc_diff.dcol * self.abs_speed, dy=loc_diff.drow*self.abs_speed)
+                    self.speed = Offset(dx=loc_diff.dcol * self.abs_speed, dy=loc_diff.drow * self.abs_speed)
         elif self.state == State.MOVING:
             if not self.is_alive():
                 self._transit(State.DEATH)
@@ -105,7 +105,7 @@ class Monster:
                 castle = self.map_view.get_castle(self.next_loc)
                 if self.state_counter % self.attack_delay == 0:
                     castle.get_hit(self.damage)
-        elif self.state == State.END_OF_LIVE:
+        if self.state == State.END_OF_LIVE:
             self.map_view.unregister(self)
             self.state = State.DEATH
         elif self.state == State.DEATH:
