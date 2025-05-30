@@ -13,7 +13,8 @@ class ItemType(enum.IntEnum):
 
 class Item:
 
-    def __init__(self, available, price, point: Point, image):
+    def __init__(self, item_type, available, price, point: Point, image):
+        self.item_type = item_type
         self.available = available
         self.price = price
         self.rect = pygame.Rect(point.x, point.y, image.get_width(), image.get_height())
@@ -28,30 +29,25 @@ class Item:
     def __repr__(self):
         return f"item: available = {self.available}, price = {self.price}"
 
+
 class Shop:
 
-    def __init__(self, player):
+    def __init__(self, player, towers_config):
         self.items = {
             ItemType.ARCHER:
-                Item(True, 50, Point(1055, 150),
+                Item(ItemType.ARCHER, True, towers_config["archer"]["price"], Point(1055, 150),
                      pygame.image.load("../resources/tower-32x40.png").convert()),
             ItemType.BALLISTA:
-                Item(False, 200, Point(1155, 150),
+                Item(ItemType.BALLISTA, True, towers_config["ballista"]["price"], Point(1155, 150),
                      pygame.image.load("../resources/tower-32x40.png").convert()),
             ItemType.BOMB:
-                Item(False, 50, Point(1105, 250),
+                Item(ItemType.BOMB, False, towers_config["bomb"]["price"], Point(1105, 250),
                      pygame.image.load("../resources/bomb_01.png").convert())}
 
         self.text_font = pygame.font.SysFont("Arial", 30)
         self.tower_shop = pygame.image.load("../resources/tower-32x40.png").convert()
         self.bomb_shop = pygame.image.load("../resources/bomb_01.png").convert()
         self.player = player
-
-    def do_acquisition(self, player, item: ItemType):
-        return self.items[item].available and player.pay(self.items[item].price)
-
-    def cancel_acquisition(self, player, item: ItemType):
-        player.refund(self.items[item].price)
 
     def make_available(self, item: ItemType):
         self.items[item].available = True
@@ -63,7 +59,6 @@ class Shop:
                     return item
         return None
 
-
     def draw(self, screen):
         self._draw_text(screen, "Tower defense", self.text_font, (255, 255, 255), 1050, 50)
         self._draw_text(screen, "Archer", self.text_font, (255, 255, 255), 1030, 200)
@@ -71,11 +66,10 @@ class Shop:
         self.items[ItemType.BALLISTA].draw(screen)
         self.items[ItemType.BOMB].draw(screen)
         self._draw_text(screen, "Ballista", self.text_font, (255, 255, 255), 1150, 200)
-#        self._draw_text(screen, "Mortar", self.text_font, (255, 255, 255), 1030, 350)
+        #        self._draw_text(screen, "Mortar", self.text_font, (255, 255, 255), 1030, 350)
         self._draw_text(screen, "Bomb", self.text_font, (255, 255, 255), 1150, 350)
         pygame.draw.line(screen, (255, 255, 255), (1000, 100), (1280, 100), 3)
         pygame.draw.line(screen, (255, 255, 255), (1000, 400), (1280, 400), 3)
-
 
     @staticmethod
     def _draw_text(screen, text, font, text_col, x, y):

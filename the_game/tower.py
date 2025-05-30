@@ -16,7 +16,7 @@ class State(enum.IntEnum):
 
 
 class Tower:
-    def __init__(self, map_view: MapView, color, scene, owner):
+    def __init__(self, map_view: MapView, color, scene, owner, reloading_duration, damage):
         self.entity = Entity.TOWER
         self.state_counter = 0
         self.map_view = map_view
@@ -27,7 +27,8 @@ class Tower:
         self.state = State.SEARCHING
         self.target = None
         self.reloading_counter = 0
-        self.reloading_duration = 50
+        self.reloading_duration = reloading_duration
+        self.damage = damage
 
     def check_monster_alive(self, m):
         return m.is_alive()
@@ -42,7 +43,12 @@ class Tower:
             if monsters:
                 # find first monster
                 self.state = State.SHOOTING
-                self.target = monsters[0]
+                target = None
+                for monster in monsters:
+                    print(monster.index)
+                    if not target or monster.index < target:
+                        target = monster.index
+                        self.target = monster
                 logger.debug(f"Found monster: {self.target}")
             return None
         elif self.state == State.SHOOTING:
@@ -50,7 +56,7 @@ class Tower:
                 logger.debug(f"Shooting monster: {self.target}")
                 self.state = State.RELOADING
                 # shoot
-                return Bullet(10, self.location(), self.scene, self.target)
+                return Bullet(self.damage, self.location(), self.scene, self.target)
             else:
                 self.target = None
                 self.state = State.SEARCHING
@@ -66,3 +72,11 @@ class Tower:
     def draw(self, screen):
         p = self.scene.get_point(self.map_view.center)
         pygame.draw.rect(screen, self.color, pygame.Rect(p.x, p.y, self.scene.cell_width, self.scene.cell_height))
+
+
+class Archer(Tower):
+    pass
+
+
+class Ballista(Tower):
+    pass

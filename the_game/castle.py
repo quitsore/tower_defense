@@ -9,10 +9,10 @@ class State(enum.IntEnum):
 
 
 class Castle:
-    def __init__(self, map_view: MapView, color):
+    def __init__(self, map_view: MapView, color, castle_config):
         self.map_view = map_view
         self.map_view.register(self)
-        self.health = 100
+        self.health = castle_config["castle"]["health"]
         self.state = State.ALIVE
         self.color = color
         self.entity = Entity.CASTLE
@@ -31,7 +31,7 @@ class Castle:
     def draw(self, screen):
         color = (255, 255, 0)
         x = 880
-        y = 40
+        y = 200
         pygame.draw.rect(screen, color, pygame.Rect(x, y, 40, 40))
 
     def is_destroyed(self) -> bool:

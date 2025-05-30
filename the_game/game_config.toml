@@ -1,0 +1,54 @@
+[wave]
+value = 5
+period_ms = 1000
+shopping_time_s = 6
+
+[towers]
+[towers.archer]
+damage = 8
+attack_speed_ms = 60
+range = 5
+price = 30
+after_wave = 0
+
+[towers.ballista]
+damage = 5
+attack_speed_ms = 20
+range = 3
+price = 50
+after_wave = 3
+
+[towers.bomb]
+damage = 20
+attack_speed_ms = 0
+range = 3
+price = 5
+after_wave = 5
+
+[monsters]
+[monsters.goblin]
+speed = 1
+damage = 10
+attack_speed = 80
+health = 30
+value = 10
+
+[monsters.orc]
+speed = 0.8
+damage = 15
+attack_speed = 100
+health = 50
+value = 20
+
+[monsters.spider]
+speed = 2
+damage = 10
+attack_speed = 50
+health = 20
+value = 15
+
+[castle]
+health = 100
+
+[player]
+start_gold = 100

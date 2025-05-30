@@ -20,28 +20,28 @@ class State(enum.IntEnum):
 
 class Monster:
 
-    def __init__(self, scene: Scene, map_view: MapView, name):
+    def __init__(self, scene: Scene, map_view: MapView, index, monster_config, color):
         self.entity = Entity.MONSTER
-        self.name = name
+        self.index = index
         self.next_loc = None
-        self.abs_speed = 1
+        self.abs_speed = monster_config["speed"]
         self.speed = Offset()
         self.offset = Offset()
         self.scene = scene
         self.map_view = map_view
         self.map_view.register(self)
-        self.color = (255, 0, 0)
+        self.color = color
         self.state = State.SPAWNING
         self.trace = []
         self.state_counter = 0
-        self.damage = 5
-        self.health = 100
-        self.gold_value = 10
-        self.attack_delay = 50
+        self.damage = monster_config["damage"]
+        self.health = monster_config["health"]
+        self.gold_value = monster_config["value"]
+        self.attack_delay = monster_config["attack_speed"]
 
     def get_hit(self, damage):
         self.health -= damage
-        logger.info(f"{self.name} got hit by {damage} points. rest health = {self.health}")
+        logger.info(f"{self.index} got hit by {damage} points. rest health = {self.health}")
 
     def is_alive(self) -> bool:
         return True if self.health > 0 else False
@@ -130,7 +130,7 @@ class Monster:
             if self.state_counter % self.attack_delay == 0:
                 color = (255, 255, 255)
             else:
-                color = (255, 0, 0)
+                color = self.color
             y = loc.row * 40 + self.offset.dy
             x = loc.col * 40 + self.offset.dx
             pygame.draw.rect(screen, color, pygame.Rect(x, y, 40, 40))
@@ -143,4 +143,20 @@ class Monster:
             return False
 
     def __str__(self):
-        return f"monster: {self.name}, location: {self.location()}, offset: {self.offset}, health: {self.health}, entity: {self.entity}"
+        return f"monster: {self.index}, location: {self.location()}, offset: {self.offset}, health: {self.health}, entity: {self.entity}"
+
+
+class Goblin(Monster):
+
+    def __init__(self, scene: Scene, map_view: MapView, index, goblin_config, color):
+        super().__init__(scene, map_view, index, goblin_config, color)
+
+
+class Orc(Monster):
+    def __init__(self, scene: Scene, map_view: MapView, index, orc_config, color):
+        super().__init__(scene, map_view, index, orc_config, color)
+
+
+class Spider(Monster):
+    def __init__(self, scene: Scene, map_view: MapView, index, spider_config, color):
+        super().__init__(scene, map_view, index, spider_config, color)

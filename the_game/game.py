@@ -1,17 +1,19 @@
 import datetime
 import pygame
 from map import Map, Location, MapView, Tag
-from monster import Monster
+from monster import Monster, Goblin, Orc
 from castle import Castle
 from map import Entity
 from scene import Scene, Point
 from player import Player
 from the_game.info_panel import InfoPanel
-from the_game.monster import State
+from the_game.monster import State, Spider
 from the_game.shop import Shop
 from the_game.transaction import Transaction
 from tower import Tower
 import logging
+import tomllib
+import random
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -21,6 +23,9 @@ class Game:
     def __init__(self):
         self.mouse_cursor_image = None
         self.background = None
+        self.config = None
+        with open("game_config.toml", mode="rb") as fp:
+            self.config = tomllib.load(fp)
         pygame.init()
         self.width, self.height = 1280, 720
         self.screen = pygame.display.set_mode((self.width, self.height))
@@ -36,21 +41,25 @@ class Game:
         self.game_map = Map("terrain.txt")
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
-        self.player = Player(1000)
+        self.player = Player(self.config["player"]["start_gold"])
         self.scene = Scene(cell_width=40, cell_height=40)
-        self.castle = Castle(MapView(self.game_map, Location(1, 22), width=1, height=1),
-                             color=pygame.Color(255, 215, 0))
-        self.time_for_next_monster = datetime.datetime.now()
+        self.castle = Castle(MapView(self.game_map, Location(5, 22), width=1, height=1),
+                             color=pygame.Color(255, 215, 0), castle_config=self.config)
+        self.time_for_next_monster = datetime.datetime.now() + datetime.timedelta(
+            seconds=self.config["wave"]["shopping_time_s"])
+        self.prep_time = datetime.datetime.now()
         self.bullets = []
         self.monsters = []
         self.towers = []
         self.monster_index = 0
-        self.wave_value = 50
+        self.wave_value = 0
+        self.wave_counter = 0
         self.mouse_click_point = None
         self.mouse_point = None
-        self.shop = Shop(self.player)
+        self.shop = Shop(self.player, self.config["towers"])
         self.text_font = pygame.font.SysFont("Arial", 30)
         self.info_panel = InfoPanel(self.player)
+        self.info_panel.init_counter(self.config["wave"]["shopping_time_s"])
         self.transaction = None
 
     def draw(self):
@@ -95,7 +104,7 @@ class Game:
         if not self.transaction:
             item = self.shop.action(self.mouse_click_point)
             if item:
-                self.transaction = Transaction(item, self.player, self.scene, self.game_map)
+                self.transaction = Transaction(item, self.player, self.scene, self.game_map, self.config["towers"])
         else:
             tower = self.transaction.action(self.mouse_point, not self.mouse_click_point is None)
             if tower:
@@ -137,14 +146,32 @@ class Game:
         self.screen.blit(show_fps, (0, 0))
 
     def spawn_monster(self):
-        if self.monster_index < self.wave_value:
-            if self.time_for_next_monster <= datetime.datetime.now():
-                self.monster_index += 1
+        now = datetime.datetime.now()
+        if now >= self.time_for_next_monster:
+            monster_type = random.randint(1, 3)
+            if monster_type == 1:
                 self.monsters.append(
-                    Monster(map_view=MapView(self.game_map, Location(1, 0), width=3, height=3),
-                            name=str(self.monster_index),
-                            scene=self.scene))
-                self.time_for_next_monster += datetime.timedelta(seconds=2)
+                    Goblin(map_view=MapView(self.game_map, Location(5, 0), width=3, height=3),
+                           index=self.monster_index,
+                           scene=self.scene,
+                           goblin_config=self.config["monsters"]["goblin"], color=(255, 0, 0)))
+            elif monster_type == 2:
+                self.monsters.append(
+                    Orc(map_view=MapView(self.game_map, Location(5, 0), width=3, height=3),
+                        index=self.monster_index,
+                        scene=self.scene,
+                        orc_config=self.config["monsters"]["orc"], color=(0, 255, 0)))
+            elif monster_type == 3:
+                self.monsters.append(
+                    Spider(map_view=MapView(self.game_map, Location(5, 0), width=3, height=3),
+                        index=self.monster_index,
+                        scene=self.scene,
+                        spider_config=self.config["monsters"]["spider"], color=(0, 0, 255)))
+            self.monster_index += 1
+            if self.monster_index % self.config["wave"]["value"] == 0:
+                self.time_for_next_monster += datetime.timedelta(seconds=self.config["wave"]["shopping_time_s"])
+            else:
+                self.time_for_next_monster += datetime.timedelta(milliseconds=self.config["wave"]["period_ms"])
 
     def remove_dead_monsters(self):
         for monster in self.monsters:
