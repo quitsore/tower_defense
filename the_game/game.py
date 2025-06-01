@@ -43,7 +43,8 @@ class Game:
         self.background.fill((0, 0, 0))
         self.player = Player(self.config["player"]["start_gold"])
         self.scene = Scene(cell_width=40, cell_height=40)
-        self.castle = Castle(MapView(self.game_map, Location(5, 22), width=1, height=1),
+        castle_loc = self.game_map.find_castle_place()
+        self.castle = Castle(MapView(self.game_map, castle_loc, width=1, height=1),
                              color=pygame.Color(255, 215, 0), castle_config=self.config)
         self.time_for_next_monster = datetime.datetime.now() + datetime.timedelta(
             seconds=self.config["wave"]["shopping_time_s"])
@@ -164,9 +165,9 @@ class Game:
             elif monster_type == 3:
                 self.monsters.append(
                     Spider(map_view=MapView(self.game_map, Location(5, 0), width=3, height=3),
-                        index=self.monster_index,
-                        scene=self.scene,
-                        spider_config=self.config["monsters"]["spider"], color=(0, 0, 255)))
+                           index=self.monster_index,
+                           scene=self.scene,
+                           spider_config=self.config["monsters"]["spider"], color=(0, 0, 255)))
             self.monster_index += 1
             if self.monster_index % self.config["wave"]["value"] == 0:
                 self.time_for_next_monster += datetime.timedelta(seconds=self.config["wave"]["shopping_time_s"])

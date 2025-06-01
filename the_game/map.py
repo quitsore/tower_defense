@@ -98,6 +98,7 @@ class Map:
         num_cols = int(lines[1])
         loaded_map = [[Cell(Tag.FREE)] * num_cols for _ in range(num_rows)]
 
+        #TODO: check that there is only one castle on the map
         map_content = lines[2:]
         if len(map_content) != num_rows:
             raise Exception(f"Unexpected number of rows in the map. Expected={num_rows}. Got={len(map_content)}")
@@ -143,6 +144,14 @@ class Map:
             return self.map[loc.row][loc.col]
         else:
             return None
+
+    def find_castle_place(self) -> Location|None:
+        for i in range(self.height):
+            for j in range(self.width):
+                loc = Location(row=i, col=j)
+                if self.is_castle(loc):
+                    return loc
+        return None
 
 
 class MapView:
