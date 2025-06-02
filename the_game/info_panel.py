@@ -29,6 +29,9 @@ class InfoPanel:
             self.remaining_time = self.start_time + self.total_duration - now
             logging.info(f"remaining_time: {self.remaining_time}")
             self.start_angle = math.radians(90 + (360 - 360 * self.remaining_time / self.total_duration))
+            return False
+        else:
+            return True
 
     def draw(self, screen):
         if self.remaining_time.days >= 0:

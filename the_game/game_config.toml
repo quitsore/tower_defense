@@ -1,7 +1,14 @@
 [wave]
-value = 5
 period_ms = 1000
-shopping_time_s = 6
+shopping_time_s = 5
+
+[level1]
+waves = ["GGG",  "GGOSSSS"]
+map = "terrain.txt"
+
+[level2]
+waves = ["GGGOOSSOO",  "GGGOOSSOO"]
+
 
 [towers]
 [towers.archer]

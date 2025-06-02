@@ -52,8 +52,8 @@ class Shop:
     def make_available(self, item: ItemType):
         self.items[item].available = True
 
-    def action(self, mouse_click_point: Point):
-        if mouse_click_point:
+    def action(self, mouse_click_point: Point, shop_open: bool):
+        if shop_open and mouse_click_point:
             for item_type, item in self.items.items():
                 if item.is_selected(mouse_click_point) and item.price <= self.player.gold:
                     return item

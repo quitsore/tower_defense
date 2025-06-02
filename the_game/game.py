@@ -13,7 +13,6 @@ from the_game.transaction import Transaction
 from tower import Tower
 import logging
 import tomllib
-import random
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -39,29 +38,38 @@ class Game:
         self.timer = None
         self.FPS = 60
         self.game_map = Map("terrain.txt")
+        self.spawn_point = self.game_map.find_spawn_point()
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
         self.player = Player(self.config["player"]["start_gold"])
         self.scene = Scene(cell_width=40, cell_height=40)
         castle_loc = self.game_map.find_castle_place()
         self.castle = Castle(MapView(self.game_map, castle_loc, width=1, height=1),
-                             color=pygame.Color(255, 215, 0), castle_config=self.config)
-        self.time_for_next_monster = datetime.datetime.now() + datetime.timedelta(
-            seconds=self.config["wave"]["shopping_time_s"])
-        self.prep_time = datetime.datetime.now()
+                             color=pygame.Color(0, 215, 0), scene=self.scene, castle_config=self.config)
+        self.time_for_next_monster = None
         self.bullets = []
         self.monsters = []
         self.towers = []
         self.monster_index = 0
-        self.wave_value = 0
-        self.wave_counter = 0
         self.mouse_click_point = None
         self.mouse_point = None
         self.shop = Shop(self.player, self.config["towers"])
         self.text_font = pygame.font.SysFont("Arial", 30)
         self.info_panel = InfoPanel(self.player)
-        self.info_panel.init_counter(self.config["wave"]["shopping_time_s"])
         self.transaction = None
+        self.shop_open = False
+        self.waves = self.config["level1"]["waves"]
+        self.wave = None
+
+    def take_next_wave(self):
+        wave = None
+        if self.waves:
+            wave = self.waves[0]
+            self.waves = self.waves[1:]
+        return wave
+
+    def load_next_level(self):
+        pass
 
     def draw(self):
         # clear screen
@@ -102,8 +110,16 @@ class Game:
                 print(f"mouse clicked: {self.mouse_click_point}")
 
     def action(self):
+        if len(self.monsters) == 0:
+            if not self.shop_open:
+                self.shop_open = True
+                self.info_panel.init_counter(self.config["wave"]["shopping_time_s"])
+                self.wave = self.take_next_wave()
+                if not self.wave:
+                    logging.warning("NEXT LEVEL")
+                    exit(1)
         if not self.transaction:
-            item = self.shop.action(self.mouse_click_point)
+            item = self.shop.action(mouse_click_point=self.mouse_click_point, shop_open=self.shop_open)
             if item:
                 self.transaction = Transaction(item, self.player, self.scene, self.game_map, self.config["towers"])
         else:
@@ -111,7 +127,10 @@ class Game:
             if tower:
                 self.towers.append(tower)
                 self.transaction = None
-        self.info_panel.action()
+        is_timer_over = self.info_panel.action()
+        if is_timer_over and self.shop_open:
+            self.shop_open = False
+            self.time_for_next_monster = datetime.datetime.now()
         for monster in self.monsters:
             monster.action()
         for tower in self.towers:
@@ -136,10 +155,8 @@ class Game:
                     self.screen.blit(self.placement, (col_idx * 40, row_idx * 40))
                 elif cell.tag == Tag.CASTLE:
                     self.castle.draw(self.screen)
-                if cell.tag == Entity.MONSTER:
-                    color = pygame.Color(93, 93, 93, 255)
-                    pygame.draw.rect(self.screen, color,
-                                     pygame.Rect(col_idx * 40, row_idx * 40, 40, 40))
+                elif cell.tag == Tag.SPAWN_POINT:
+                    self.screen.blit(self.path, (col_idx * 40, row_idx * 40))
 
     def show_fps(self):
         fps = int(self.clock.get_fps())
@@ -148,29 +165,34 @@ class Game:
 
     def spawn_monster(self):
         now = datetime.datetime.now()
-        if now >= self.time_for_next_monster:
-            monster_type = random.randint(1, 3)
-            if monster_type == 1:
+        if self.time_for_next_monster and now >= self.time_for_next_monster:
+            if self.wave:
+                monster_type = self.wave[0]
+                self.wave = self.wave[1:]
+            else:
+                monster_type = None
+            if monster_type == "G":
                 self.monsters.append(
-                    Goblin(map_view=MapView(self.game_map, Location(5, 0), width=3, height=3),
+                    Goblin(map_view=MapView(self.game_map, self.spawn_point, width=3, height=3),
                            index=self.monster_index,
                            scene=self.scene,
                            goblin_config=self.config["monsters"]["goblin"], color=(255, 0, 0)))
-            elif monster_type == 2:
+            elif monster_type == "O":
                 self.monsters.append(
-                    Orc(map_view=MapView(self.game_map, Location(5, 0), width=3, height=3),
+                    Orc(map_view=MapView(self.game_map, self.spawn_point, width=3, height=3),
                         index=self.monster_index,
                         scene=self.scene,
                         orc_config=self.config["monsters"]["orc"], color=(0, 255, 0)))
-            elif monster_type == 3:
+            elif monster_type == "S":
                 self.monsters.append(
-                    Spider(map_view=MapView(self.game_map, Location(5, 0), width=3, height=3),
+                    Spider(map_view=MapView(self.game_map, self.spawn_point, width=3, height=3),
                            index=self.monster_index,
                            scene=self.scene,
                            spider_config=self.config["monsters"]["spider"], color=(0, 0, 255)))
+
             self.monster_index += 1
-            if self.monster_index % self.config["wave"]["value"] == 0:
-                self.time_for_next_monster += datetime.timedelta(seconds=self.config["wave"]["shopping_time_s"])
+            if monster_type is None:
+                self.time_for_next_monster = None
             else:
                 self.time_for_next_monster += datetime.timedelta(milliseconds=self.config["wave"]["period_ms"])
 

@@ -54,6 +54,7 @@ class Tag(enum.IntEnum):
     TERRAIN = 1
     TOWER = 2
     CASTLE = 3
+    SPAWN_POINT = 9
 
 
 class Entity(enum.IntEnum):
@@ -98,7 +99,7 @@ class Map:
         num_cols = int(lines[1])
         loaded_map = [[Cell(Tag.FREE)] * num_cols for _ in range(num_rows)]
 
-        #TODO: check that there is only one castle on the map
+        # TODO: check that there is only one castle on the map
         map_content = lines[2:]
         if len(map_content) != num_rows:
             raise Exception(f"Unexpected number of rows in the map. Expected={num_rows}. Got={len(map_content)}")
@@ -120,6 +121,9 @@ class Map:
 
     def is_castle(self, loc: Location):
         return self.on_map(loc) and self.map[loc.row][loc.col].tag == Tag.CASTLE
+
+    def is_spawn_point(self, loc):
+        return self.on_map(loc) and self.map[loc.row][loc.col].tag == Tag.SPAWN_POINT
 
     def is_tower_placement(self, loc: Location):
         return self.on_map(loc) and self.map[loc.row][loc.col].tag == Tag.TOWER
@@ -145,11 +149,19 @@ class Map:
         else:
             return None
 
-    def find_castle_place(self) -> Location|None:
+    def find_castle_place(self) -> Location | None:
         for i in range(self.height):
             for j in range(self.width):
                 loc = Location(row=i, col=j)
                 if self.is_castle(loc):
+                    return loc
+        return None
+
+    def find_spawn_point(self) -> Location | None:
+        for i in range(self.height):
+            for j in range(self.width):
+                loc = Location(row=i, col=j)
+                if self.is_spawn_point(loc):
                     return loc
         return None
 
