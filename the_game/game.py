@@ -1,3 +1,6 @@
+import logging
+logging.basicConfig(level=logging.INFO)
+
 import datetime
 import pygame
 from map import Map, Location, MapView, Tag
@@ -11,10 +14,8 @@ from the_game.monster import State, Spider
 from the_game.shop import Shop
 from the_game.transaction import Transaction
 from tower import Tower
-import logging
 import tomllib
 
-logging.basicConfig(level=logging.DEBUG)
 
 
 class Game:
@@ -37,15 +38,13 @@ class Game:
         self.is_work = True
         self.timer = None
         self.FPS = 60
-        self.game_map = Map("terrain.txt")
-        self.spawn_point = self.game_map.find_spawn_point()
+        self.game_map = None
+        self.spawn_point = None
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
         self.player = Player(self.config["player"]["start_gold"])
         self.scene = Scene(cell_width=40, cell_height=40)
-        castle_loc = self.game_map.find_castle_place()
-        self.castle = Castle(MapView(self.game_map, castle_loc, width=1, height=1),
-                             color=pygame.Color(0, 215, 0), scene=self.scene, castle_config=self.config)
+        self.castle = None
         self.time_for_next_monster = None
         self.bullets = []
         self.monsters = []
@@ -58,8 +57,26 @@ class Game:
         self.info_panel = InfoPanel(self.player)
         self.transaction = None
         self.shop_open = False
-        self.waves = self.config["level1"]["waves"]
+        self.waves = None
         self.wave = None
+        self.level_id = 0
+
+    def load_next_level(self):
+        self.level_id += 1
+        level_tag = f"level{self.level_id}"
+        if level_tag in self.config:
+            level_cfg = self.config[level_tag]
+            self.game_map = Map(level_cfg["map"])
+            self.spawn_point = self.game_map.find_spawn_point()
+            castle_loc = self.game_map.find_castle_place()
+            self.castle = Castle(MapView(self.game_map, castle_loc, width=1, height=1),
+                                 color=pygame.Color(0, 215, 0), scene=self.scene, castle_config=self.config)
+            self.waves = level_cfg["waves"]
+            self.wave = None
+            self.towers = []
+        else:
+            logging.warning("YOU COMPLETED ALL LEVELS")
+            exit(0)
 
     def take_next_wave(self):
         wave = None
@@ -67,9 +84,6 @@ class Game:
             wave = self.waves[0]
             self.waves = self.waves[1:]
         return wave
-
-    def load_next_level(self):
-        pass
 
     def draw(self):
         # clear screen
@@ -114,10 +128,9 @@ class Game:
             if not self.shop_open:
                 self.shop_open = True
                 self.info_panel.init_counter(self.config["wave"]["shopping_time_s"])
+                if not self.waves:
+                    self.load_next_level()
                 self.wave = self.take_next_wave()
-                if not self.wave:
-                    logging.warning("NEXT LEVEL")
-                    exit(1)
         if not self.transaction:
             item = self.shop.action(mouse_click_point=self.mouse_click_point, shop_open=self.shop_open)
             if item:
