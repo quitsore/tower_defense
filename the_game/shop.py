@@ -19,12 +19,17 @@ class Item:
         self.price = price
         self.rect = pygame.Rect(point.x, point.y, image.get_width(), image.get_height())
         self.image = image
+        self.cover = pygame.surface.Surface(image.get_size())
+        self.cover.fill((255, 255, 255))
+        self.cover.set_alpha(100)
 
     def is_selected(self, mouse_click_position: Point) -> bool:
         return self.available and self.rect.collidepoint(mouse_click_position.x, mouse_click_position.y)
 
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
+        if not self.available:
+            screen.blit(self.cover, (self.rect.x, self.rect.y))
 
     def __repr__(self):
         return f"item: available = {self.available}, price = {self.price}"
@@ -48,11 +53,12 @@ class Shop:
         self.tower_shop = pygame.image.load("../resources/tower-32x40.png").convert()
         self.bomb_shop = pygame.image.load("../resources/bomb_01.png").convert()
         self.player = player
-
-    def make_available(self, item: ItemType):
-        self.items[item].available = True
+        self.shop_open = False
 
     def action(self, mouse_click_point: Point, shop_open: bool):
+        self.shop_open = shop_open
+        for item in self.items.values():
+            item.available = shop_open
         if shop_open and mouse_click_point:
             for item_type, item in self.items.items():
                 if item.is_selected(mouse_click_point) and item.price <= self.player.gold:
