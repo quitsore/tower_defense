@@ -100,9 +100,6 @@ class Menu:
     def action(self):
         self.play_music()
 
-    def exit(self):
-        pass
-
     def check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

@@ -55,7 +55,7 @@ class Game:
         self.mouse_point = None
         self.shop = Shop(self.player, self.config["towers"])
         self.text_font = pygame.font.SysFont("Arial", 30)
-        self.info_panel = InfoPanel(self.player)
+        self.info_panel = InfoPanel(self.player, self.screen)
         self.transaction = None
         self.shop_open = False
         self.waves = None
