@@ -6,9 +6,9 @@ from scene import Point
 
 
 class ItemType(enum.IntEnum):
-    ARCHER = 1
-    BALLISTA = 2
-    BOMB = 3
+    STONE = 1
+    METEOR = 2
+    FIRE = 3
 
 
 class Item:
@@ -39,14 +39,14 @@ class Shop:
 
     def __init__(self, player, towers_config):
         self.items = {
-            ItemType.ARCHER:
-                Item(ItemType.ARCHER, True, towers_config["archer"]["price"], Point(1055, 150),
-                     pygame.image.load("../resources/tower-32x40.png").convert()),
-            ItemType.BALLISTA:
-                Item(ItemType.BALLISTA, True, towers_config["ballista"]["price"], Point(1155, 150),
-                     pygame.image.load("../resources/tower-32x40.png").convert()),
-            ItemType.BOMB:
-                Item(ItemType.BOMB, False, towers_config["bomb"]["price"], Point(1105, 250),
+            ItemType.STONE:
+                Item(ItemType.STONE, True, towers_config["stone"]["price"], Point(1055, 150),
+                     pygame.image.load("../resources/stone_tower/stone_turret0.png").convert()),
+            ItemType.METEOR:
+                Item(ItemType.METEOR, True, towers_config["meteor"]["price"], Point(1155, 150),
+                     pygame.image.load("../resources/meteor_tower/meteor_turret0.png").convert()),
+            ItemType.FIRE:
+                Item(ItemType.FIRE, False, towers_config["fire"]["price"], Point(1105, 250),
                      pygame.image.load("../resources/bomb_01.png").convert())}
 
         self.text_font = pygame.font.SysFont("Arial", 30)
@@ -67,13 +67,13 @@ class Shop:
 
     def draw(self, screen):
         self._draw_text(screen, "Tower defense", self.text_font, (255, 255, 255), 1050, 50)
-        self._draw_text(screen, "Archer", self.text_font, (255, 255, 255), 1030, 200)
-        self.items[ItemType.ARCHER].draw(screen)
-        self.items[ItemType.BALLISTA].draw(screen)
-        self.items[ItemType.BOMB].draw(screen)
-        self._draw_text(screen, "Ballista", self.text_font, (255, 255, 255), 1150, 200)
+        self._draw_text(screen, "Stone", self.text_font, (255, 255, 255), 1030, 200)
+        self.items[ItemType.STONE].draw(screen)
+        self.items[ItemType.METEOR].draw(screen)
+        self.items[ItemType.FIRE].draw(screen)
+        self._draw_text(screen, "Meteor", self.text_font, (255, 255, 255), 1150, 200)
         #        self._draw_text(screen, "Mortar", self.text_font, (255, 255, 255), 1030, 350)
-        self._draw_text(screen, "Bomb", self.text_font, (255, 255, 255), 1150, 350)
+        self._draw_text(screen, "Fire", self.text_font, (255, 255, 255), 1150, 350)
         pygame.draw.line(screen, (255, 255, 255), (1000, 100), (1280, 100), 3)
         pygame.draw.line(screen, (255, 255, 255), (1000, 400), (1280, 400), 3)
 

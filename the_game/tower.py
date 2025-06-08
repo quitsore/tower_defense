@@ -1,4 +1,7 @@
 import enum
+from pathlib import Path
+from typing import List
+
 import pygame
 
 from the_game.bullet import Bullet
@@ -16,22 +19,22 @@ class State(enum.IntEnum):
 
 
 class Tower:
-    def __init__(self, map_view: MapView, color, scene, owner, reloading_duration, damage):
+    def __init__(self, map_view: MapView, images, scene, owner, tower_config, lag, bullet_lag):
         self.entity = Entity.TOWER
         self.state_counter = 0
         self.map_view = map_view
         self.map_view.register(self)
-        self.color = color
+        self.images = images
         self.scene = scene
         self.owner = owner
         self.state = State.SEARCHING
         self.target = None
         self.reloading_counter = 0
-        self.reloading_duration = reloading_duration
-        self.damage = damage
-
-    def check_monster_alive(self, m):
-        return m.is_alive()
+        self.reloading_duration = tower_config["attack_speed_ms"]
+        self.damage = tower_config["damage"]
+        self.draw_counter = 0
+        self.lag = lag
+        self.bullet_lag = bullet_lag
 
     def location(self) -> Location:
         return self.map_view.center
@@ -56,7 +59,8 @@ class Tower:
                 logger.debug(f"Shooting monster: {self.target}")
                 self.state = State.RELOADING
                 # shoot
-                return Bullet(self.damage, self.location(), self.scene, self.target)
+                return Bullet(self.damage, self.images["bullet"], self.location(), self.scene, self.target,
+                              self.bullet_lag)
             else:
                 self.target = None
                 self.state = State.SEARCHING
@@ -70,13 +74,64 @@ class Tower:
         return None
 
     def draw(self, screen):
+        self.draw_counter += 1
         p = self.scene.get_point(self.map_view.center)
-        pygame.draw.rect(screen, self.color, pygame.Rect(p.x, p.y, self.scene.cell_width, self.scene.cell_height))
+        screen.blit(self.images["tower"][(self.draw_counter // self.lag) % len(self.images)], (p.x, p.y))
 
 
-class Archer(Tower):
-    pass
+class StoneTower(Tower):
+
+    def __init__(self, map_view, images, scene, owner, stone_tower_config, lag):
+        super().__init__(map_view, images, scene, owner, stone_tower_config, lag, 5)
 
 
-class Ballista(Tower):
-    pass
+class MeteorTower(Tower):
+
+    def __init__(self, map_view, images, scene, owner, meteor_tower_config, lag):
+        super().__init__(map_view, images, scene, owner, meteor_tower_config, lag, 6)
+
+
+class TowerFactory:
+
+    def __init__(self, scene, owner, towers_config):
+        self.scene = scene
+        self.owner = owner
+        self.towers_config = towers_config
+        self.meteor_tower_sprites = {"tower": TowerFactory.load_sprites(Path('../resources/meteor_tower')),
+                                     "bullet": {"bullet": pygame.image.load("../resources/meteor.png").convert_alpha(),
+                                                "explosion": TowerFactory.load_sprites(
+                                                    Path('../resources/meteor-explosion'))}}
+        self.stone_tower_sprites = {"tower": TowerFactory.load_sprites(Path('../resources/stone_tower')),
+                                    "bullet": {"bullet": pygame.image.load("../resources/stone.png").convert_alpha(),
+                                               "explosion": TowerFactory.load_sprites(
+                                                   Path('../resources/stone-explosion'))}}
+
+    def create_meteor_tower(self, game_map, loc):
+        return MeteorTower(map_view=MapView(game_map=game_map, center=loc, width=self.towers_config["meteor"]["range"],
+                                            height=self.towers_config["meteor"]["range"]),
+                           images=self.meteor_tower_sprites,
+                           meteor_tower_config=self.towers_config["meteor"],
+                           scene=self.scene,
+                           owner=self.owner,
+                           lag=8)
+
+    def create_stone_tower(self, game_map, loc):
+        return StoneTower(map_view=MapView(game_map=game_map, center=loc, width=self.towers_config["stone"]["range"],
+                                           height=self.towers_config["stone"]["range"]),
+                          images=self.stone_tower_sprites,
+                          stone_tower_config=self.towers_config["stone"],
+                          scene=self.scene,
+                          owner=self.owner,
+                          lag=8)
+
+    @staticmethod
+    def load_sprites(tower_dir: Path):
+        sprites = [pygame.image.load(tower_dir / f.name).convert_alpha() for f in
+                   TowerFactory.sorted_files(tower_dir)]
+        return sprites
+
+    @staticmethod
+    def sorted_files(files_dir: Path) -> List[Path]:
+        files = sorted((f for f in
+                        files_dir.iterdir() if f.is_file()), key=lambda f: f.name)
+        return files

@@ -44,12 +44,17 @@ class Monster:
         self.attack_delay = monster_config["attack_speed"]
         self.hurt_counter = 0
         self.running_images = sprites["running"]
+        self.running_back_images = sprites["running_back"]
         self.hitting_images = sprites["hitting"]
+        self.hitting_back_images = sprites["hitting_back"]
         self.dying_images = sprites["dying"]
+        self.dying_back_images = sprites["dying_back"]
         self.hurting_images = sprites["hurting"]
+        self.hurting_back_images = sprites["hurting_back"]
         self.death_counter = 0
         self.lag = lag
         assert lag > 0
+        self.flip_image = False
 
     def get_hit(self, damage):
         self.health -= damage
@@ -81,19 +86,35 @@ class Monster:
         return self.point() + self.scene.cell_center()
 
     def running_image(self, draw_counter):
-        return self.running_images[(draw_counter // self.lag) % len(self.running_images)]
+        if self.flip_image:
+            images = self.running_back_images
+        else:
+            images = self.running_images
+        return images[(draw_counter // self.lag) % len(images)]
 
     def hitting_image(self, draw_counter):
-        return self.hitting_images[(draw_counter // self.lag) % len(self.hitting_images)]
+        if self.flip_image:
+            images = self.hitting_back_images
+        else:
+            images = self.hitting_images
+        return images[(draw_counter // self.lag) % len(images)]
 
     def dying_image(self, draw_counter):
-        return self.dying_images[(draw_counter // self.lag) % len(self.dying_images)]
+        if self.flip_image:
+            images = self.dying_back_images
+        else:
+            images = self.dying_images
+        return images[(draw_counter // self.lag) % len(images)]
 
     def get_death_counter(self):
         return len(self.dying_images) * self.lag - self.lag
 
     def hurting_image(self, draw_counter):
-        return self.hurting_images[(draw_counter // self.lag) % len(self.hurting_images)]
+        if self.flip_image:
+            images = self.hurting_back_images
+        else:
+            images = self.hurting_images
+        return images[(draw_counter // self.lag) % len(images)]
 
     def action(self):
         self.state_counter += 1
@@ -121,6 +142,10 @@ class Monster:
                     self.offset = Offset()
                     loc_diff = self.next_loc - loc
                     self.speed = Offset(dx=loc_diff.dcol * self.abs_speed, dy=loc_diff.drow * self.abs_speed)
+                    if self.speed.dx < 0:
+                        self.flip_image = True
+                    elif self.speed.dx > 0:
+                        self.flip_image = False
         elif self.state == State.MOVING:
             if not self.is_alive():
                 self._transit(State.END_OF_LIVE)
@@ -232,18 +257,26 @@ class MonsterFactory:
     @staticmethod
     def load_sprites(monster_dir: Path):
         sprites = {}
+
         running_dir = monster_dir / 'running'
         sprites["running"] = [pygame.image.load(running_dir / f.name).convert_alpha() for f in
                               MonsterFactory.sorted_files(running_dir)]
+        sprites["running_back"] = [pygame.transform.flip(img, True, False) for img in sprites["running"]]
+
         hitting_dir = monster_dir / 'hitting'
         sprites["hitting"] = [pygame.image.load(hitting_dir / f.name).convert_alpha() for f in
                               MonsterFactory.sorted_files(hitting_dir)]
+        sprites["hitting_back"] = [pygame.transform.flip(img, True, False) for img in sprites["hitting"]]
+
         hurting_dir = monster_dir / 'hurting'
         sprites["hurting"] = [pygame.image.load(hurting_dir / f.name).convert_alpha() for f in
                               MonsterFactory.sorted_files(hurting_dir)]
+        sprites["hurting_back"] = [pygame.transform.flip(img, True, False) for img in sprites["hurting"]]
+
         dying_dir = monster_dir / 'dying'
         sprites["dying"] = [pygame.image.load(dying_dir / f.name).convert_alpha() for f in
                             MonsterFactory.sorted_files(dying_dir)]
+        sprites["dying_back"] = [pygame.transform.flip(img, True, False) for img in sprites["dying"]]
         return sprites
 
     @staticmethod

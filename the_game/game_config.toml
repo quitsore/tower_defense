@@ -88,21 +88,21 @@ map = "terrain14.txt"
 towers = ["SM"]
 
 [towers]
-[towers.archer]
+[towers.stone]
 damage = 10
 attack_speed_ms = 50
 range = 5
 price = 30
 after_wave = 0
 
-[towers.ballista]
+[towers.meteor]
 damage = 5
 attack_speed_ms = 15
 range = 3
 price = 50
 after_wave = 3
 
-[towers.bomb]
+[towers.fire]
 damage = 20
 attack_speed_ms = 0
 range = 3

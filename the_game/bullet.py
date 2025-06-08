@@ -14,33 +14,45 @@ class State(enum.IntEnum):
 
 class Bullet:
 
-    def __init__(self, damage, start_location: Location, scene: Scene, target):
+    def __init__(self, damage, images, start_location: Location, scene: Scene, target, lag):
         self.target = target
         self.point = scene.get_point(start_location, scene.cell_center())
         self.scene = scene
         self.state = State.FLYING
-        self.color = (0, 0, 0)
+        self.images = images
         self.abs_speed = 5
         self.damage = damage
+        self.draw_counter = 0
+        self.lag = lag
+        self.strike_counter = len(self.images["explosion"]) * self.lag - self.lag
+
+    def _transit(self, new_state):
+        self.state = new_state
+        if new_state == State.STRIKING:
+            self.target.get_hit(self.damage)
+            self.draw_counter = 0
 
     def action(self):
         if self.state == State.FLYING:
             next_point = self.calculate_next_point()
             if next_point.distance_to(self.target.center_point()) <= (self.abs_speed / 2 + 1):
-                self.state = State.STRIKING
+                self._transit(State.STRIKING)
             else:
                 self.point = next_point
         elif self.state == State.STRIKING:
-            self.target.get_hit(self.damage)
-            self.state = State.DONE
+            if self.strike_counter == 0:
+                self._transit(State.DONE)
+            else:
+                self.strike_counter -= 1
         elif self.state == State.DONE:
             pass
 
     def draw(self, screen):
+        self.draw_counter += 1
         if self.state == State.FLYING:
-            pygame.draw.rect(screen, self.color, pygame.Rect(self.point.x, self.point.y, 8, 8))
-        else:
-            pass
+            screen.blit(self.images["bullet"], (self.point.x, self.point.y))
+        elif self.state == State.STRIKING:
+            screen.blit(self.images["explosion"][self.draw_counter // self.lag], (self.point.x, self.point.y))
 
     def calculate_next_point(self) -> Point:
         # given point, target and speed, calculate next point

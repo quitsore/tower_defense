@@ -5,20 +5,20 @@ import pygame
 from the_game.map import Map, MapView, Entity
 from the_game.scene import Point, Scene
 from the_game.shop import ItemType
-from the_game.tower import Tower, Archer, Ballista
+from the_game.tower import Tower, StoneTower, MeteorTower, TowerFactory
 
 
 class Transaction:
-    def __init__(self, item, player, scene: Scene, game_map: Map, tower_config):
+    def __init__(self, item, player, scene: Scene, game_map: Map, tower_factory: TowerFactory):
         self.item = item
         self.player = player
         self.game_map = game_map
         self.mouse_cursor_image = None
         self.cover = None
         self.scene = scene
-        self.tower_config = tower_config
         self.change_cursor(self.item.image)
         self.on_tower_placement = False
+        self.tower_factory = tower_factory
 
     def __del__(self):
         self.change_cursor(None)
@@ -51,18 +51,10 @@ class Transaction:
         return None
 
     def spawn_item(self, loc, item):
-        if item.item_type == ItemType.ARCHER:
-            return Archer(map_view=MapView(self.game_map, loc, width=self.tower_config["archer"]["range"],
-                                           height=self.tower_config["archer"]["range"]),
-                          color=pygame.Color(255, 16, 240), scene=self.scene, owner=self.player,
-                          reloading_duration=self.tower_config["archer"]["attack_speed_ms"],
-                          damage=self.tower_config["archer"]["damage"])
-        elif item.item_type == ItemType.BALLISTA:
-            return Ballista(map_view=MapView(self.game_map, loc, width=self.tower_config["ballista"]["range"],
-                                             height=self.tower_config["ballista"]["range"]),
-                            color=pygame.Color(25, 106, 250), scene=self.scene, owner=self.player,
-                            reloading_duration=self.tower_config["ballista"]["attack_speed_ms"],
-                            damage=self.tower_config["ballista"]["damage"])
+        if item.item_type == ItemType.STONE:
+            return self.tower_factory.create_stone_tower(game_map=self.game_map, loc=loc)
+        elif item.item_type == ItemType.METEOR:
+            return self.tower_factory.create_meteor_tower(game_map=self.game_map, loc=loc)
         return None
 
     def draw(self, screen):

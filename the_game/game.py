@@ -14,7 +14,7 @@ from the_game.info_panel import InfoPanel
 from the_game.monster import State, Spider
 from the_game.shop import Shop
 from the_game.transaction import Transaction
-from tower import Tower
+from tower import Tower, TowerFactory
 import tomllib
 
 
@@ -45,6 +45,7 @@ class Game:
         self.player = Player(self.config["player"]["start_gold"])
         self.scene = Scene(cell_width=60, cell_height=60)
         self.monster_factory = MonsterFactory(self.scene, self.config["monsters"])
+        self.tower_factory = TowerFactory(scene=self.scene, owner=self.player, towers_config=self.config["towers"])
         self.castle = None
         self.time_for_next_monster = None
         self.bullets = []
@@ -136,7 +137,7 @@ class Game:
         if not self.transaction:
             item = self.shop.action(mouse_click_point=self.mouse_click_point, shop_open=self.shop_open)
             if item:
-                self.transaction = Transaction(item, self.player, self.scene, self.game_map, self.config["towers"])
+                self.transaction = Transaction(item, self.player, self.scene, self.game_map, self.tower_factory)
         else:
             tower = self.transaction.action(self.mouse_point, not self.mouse_click_point is None)
             if tower:
