@@ -1,6 +1,6 @@
 [wave]
 period_ms = 1000
-shopping_time_s = 5
+shopping_time_s = 10
 
 [level1]
 waves = ["GG"]

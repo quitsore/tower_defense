@@ -1,9 +1,12 @@
 import pygame
 from scene import Point
+from platformdirs import user_data_dir
+from pathlib import Path
+import tomllib
 
 
 class MenuTile:
-    def __init__(self, number, screen, block, x, y, size, text_font, col, row, image):
+    def __init__(self, number, screen, block, x, y, size, text_font, col, row, image, last_lvl_unlock):
         self.btn = None
         self.number = number
         self.rect = pygame.Rect(x, y, image.get_width(), image.get_height())
@@ -17,6 +20,7 @@ class MenuTile:
         self.cover.fill((255, 255, 255))
         self.cover.set_alpha(100)
         self.is_clicked = False
+        self.last_lvl_unlocked = last_lvl_unlock
 
     def action(self):
         pass
@@ -33,13 +37,13 @@ class MenuTile:
         pygame.draw.rect(self.screen, (0, 0, 0),
                          pygame.Rect((self.col + 1) * 90 + self.size * self.col + 5,
                                      (self.row + 1) * 80 + self.size * self.row + 5, self.size, self.size))
-        if self.is_clicked and self.number == 1:
+        if self.is_clicked and self.number <= self.last_lvl_unlocked:
             extra = 5
         self.screen.blit(self.block, (self.x + extra, self.y + extra))
         self._draw_text(self.screen, f"{self.number}", self.text_font, (255, 255, 255),
                         (self.col + 1) * 90 + self.size * self.col + self.size / 2 + extra,
                         (self.row + 1) * 80 + self.size * self.row + self.size / 2 + extra)
-        if self.number > 1:
+        if self.number > self.last_lvl_unlocked:
             self.screen.blit(self.cover, (self.rect.x + extra, self.rect.y + extra))
 
     @staticmethod
@@ -66,7 +70,13 @@ class Menu:
         self.background.fill((0, 0, 0))
         self.active_tile = None
         self.played = False
-
+        self.app_name = "TowerDefense"
+        data_dir = Path(user_data_dir(self.app_name, appauthor=False))
+        data_dir.mkdir(parents=True, exist_ok=True)
+        self.config_file = data_dir / "saves.toml"
+        print(f"config file {self.config_file}")
+        self.config = self.load_data()
+        print(self.config["levels"]["last_unlocked"])
         self.tiles = []
         counter = 0
         self.size = 80
@@ -77,8 +87,15 @@ class Menu:
                 counter += 1
                 x, y = (col + 1) * self.left_space + self.size * col, (row + 1) * self.space + self.size * row
                 menu_tile = MenuTile(counter, self.screen, self.placement, x, y, self.size, self.text_font, col, row,
-                                     self.placement)
+                                     self.placement, self.config["levels"]["last_unlocked"])
                 self.tiles.append(menu_tile)
+
+    def load_data(self):
+        if self.config_file.exists():
+            with open(self.config_file, "rb") as f:
+                config = tomllib.load(f)
+                return config
+        return None
 
     def action(self):
         self.play_music()
