@@ -3,24 +3,75 @@ period_ms = 1000
 shopping_time_s = 5
 
 [level1]
-waves = ["GGG",  "GGOSSSS"]
+waves = ["GG"]
 map = "terrain.txt"
+gold = 30
 
 [level2]
-waves = ["GGGOOSSOO",  "GGGOOSSOO"]
+waves = ["GGGG"]
 map = "terrain2.txt"
+gold = 50
+
+[level3]
+waves = ["GGG",  "GGGG", "GGGGG"]
+map = "terrain3.txt"
+
+[level4]
+waves = ["OOO", "OOGO", "GOOGO"]
+map = "terrain4.txt"
+
+[level5]
+waves = ["OGOGOG",  "OOOGOO", "GGGOGGG"]
+map = "terrain5.txt"
+
+[level6]
+waves = ["SSS",  "SGSSS", "OSSS"]
+map = "terrain6.txt"
+
+[level7]
+waves = ["SGOOGSS",  "SSOGOSS", "G"]
+map = "terrain7.txt"
+
+[level8]
+waves = ["OOOGGSSSSG",  "GOOOOOSSSSOO"]
+map = "terrain8.txt"
+
+[level9]
+waves = ["",  ""]
+map = "terrain9.txt"
+
+[level10]
+waves = ["",  ""]
+map = "terrain10.txt"
+
+[level11]
+waves = ["",  ""]
+map = "terrain11.txt"
+
+[level12]
+waves = ["",  ""]
+map = "terrain12.txt"
+
+[level13]
+waves = ["",  ""]
+map = "terrain13.txt"
+
+[level14]
+waves = ["",  ""]
+map = "terrain14.txt"
+
 
 [towers]
 [towers.archer]
-damage = 8
-attack_speed_ms = 30
+damage = 10
+attack_speed_ms = 50
 range = 5
 price = 30
 after_wave = 0
 
 [towers.ballista]
 damage = 5
-attack_speed_ms = 10
+attack_speed_ms = 15
 range = 3
 price = 50
 after_wave = 3
@@ -34,21 +85,21 @@ after_wave = 5
 
 [monsters]
 [monsters.goblin]
-speed = 2
+speed = 1.5
 damage = 10
 attack_speed = 80
 health = 30
 value = 10
 
 [monsters.orc]
-speed = 1.5
+speed = 1
 damage = 15
 attack_speed = 100
 health = 50
 value = 20
 
 [monsters.spider]
-speed = 3
+speed = 2.5
 damage = 10
 attack_speed = 50
 health = 20
@@ -58,4 +109,4 @@ value = 15
 health = 100
 
 [player]
-start_gold = 100
+start_gold = 60
