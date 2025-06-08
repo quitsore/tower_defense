@@ -1,10 +1,11 @@
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 import datetime
 import pygame
 from map import Map, Location, MapView, Tag
-from monster import Monster, Goblin, Orc
+from monster import Monster, Goblin, Orc, MonsterFactory
 from castle import Castle
 from map import Entity
 from scene import Scene, Point
@@ -15,7 +16,6 @@ from the_game.shop import Shop
 from the_game.transaction import Transaction
 from tower import Tower
 import tomllib
-
 
 
 class Game:
@@ -30,9 +30,9 @@ class Game:
         self.width, self.height = 1280, 720
         self.screen = pygame.display.set_mode((self.width, self.height))
         pygame.display.set_caption("Tower defense")
-        self.path = pygame.image.load("../resources/path-40x40.png").convert()
-        self.grass = pygame.image.load("../resources/grass-40x40.png").convert()
-        self.placement = pygame.image.load("../resources/brick-40x40.png").convert()
+        self.path = pygame.image.load("../resources/brick-60x60.png").convert()
+        self.grass = pygame.image.load("../resources/grass-60x60.png").convert()
+        self.placement = pygame.image.load("../resources/brick2-60x60.png").convert()
         self.cursorPX, self.curserPY = self.width // 2, self.height // 2
         self.clock = pygame.time.Clock()
         self.is_work = True
@@ -43,7 +43,8 @@ class Game:
         self.background = pygame.surface.Surface([self.width, self.height])
         self.background.fill((0, 0, 0))
         self.player = Player(self.config["player"]["start_gold"])
-        self.scene = Scene(cell_width=40, cell_height=40)
+        self.scene = Scene(cell_width=60, cell_height=60)
+        self.monster_factory = MonsterFactory(self.scene, self.config["monsters"])
         self.castle = None
         self.time_for_next_monster = None
         self.bullets = []
@@ -93,6 +94,7 @@ class Game:
         self.shop.draw(self.screen)
         # draw side panel
         self.info_panel.draw(self.screen)
+        self.castle.draw(self.screen)
         for monster in self.monsters:
             monster.draw(self.screen)
         for tower in self.towers:
@@ -161,15 +163,14 @@ class Game:
         for row_idx, row in enumerate(self.game_map.map):
             for col_idx, cell in enumerate(row):
                 if cell.tag == Tag.FREE:
-                    self.screen.blit(self.path, (col_idx * 40, row_idx * 40))
-                elif cell.tag == Tag.TERRAIN:
-                    self.screen.blit(self.grass, (col_idx * 40, row_idx * 40))
+                    self.screen.blit(self.path, (col_idx * self.scene.cell_width, row_idx * self.scene.cell_height))
+                elif cell.tag == Tag.TERRAIN or cell.tag == Tag.CASTLE:
+                    self.screen.blit(self.grass, (col_idx * self.scene.cell_width, row_idx * self.scene.cell_height))
                 elif cell.tag == Tag.TOWER:
-                    self.screen.blit(self.placement, (col_idx * 40, row_idx * 40))
-                elif cell.tag == Tag.CASTLE:
-                    self.castle.draw(self.screen)
+                    self.screen.blit(self.placement,
+                                     (col_idx * self.scene.cell_width, row_idx * self.scene.cell_height))
                 elif cell.tag == Tag.SPAWN_POINT:
-                    self.screen.blit(self.path, (col_idx * 40, row_idx * 40))
+                    self.screen.blit(self.path, (col_idx * self.scene.cell_width, row_idx * self.scene.cell_height))
 
     def show_fps(self):
         fps = int(self.clock.get_fps())
@@ -184,29 +185,19 @@ class Game:
                 self.wave = self.wave[1:]
             else:
                 monster_type = None
+            monster = None
             if monster_type == "G":
-                self.monsters.append(
-                    Goblin(map_view=MapView(self.game_map, self.spawn_point, width=3, height=3),
-                           index=self.monster_index,
-                           scene=self.scene,
-                           goblin_config=self.config["monsters"]["goblin"], color=(255, 0, 0)))
+                monster = self.monster_factory.create_goblin(self.game_map, self.spawn_point, self.monster_index)
             elif monster_type == "O":
-                self.monsters.append(
-                    Orc(map_view=MapView(self.game_map, self.spawn_point, width=3, height=3),
-                        index=self.monster_index,
-                        scene=self.scene,
-                        orc_config=self.config["monsters"]["orc"], color=(0, 255, 0)))
+                monster = self.monster_factory.create_orc(self.game_map, self.spawn_point, self.monster_index)
             elif monster_type == "S":
-                self.monsters.append(
-                    Spider(map_view=MapView(self.game_map, self.spawn_point, width=3, height=3),
-                           index=self.monster_index,
-                           scene=self.scene,
-                           spider_config=self.config["monsters"]["spider"], color=(0, 0, 255)))
-
-            self.monster_index += 1
+                monster = self.monster_factory.create_spider(self.game_map, self.spawn_point, self.monster_index)
             if monster_type is None:
                 self.time_for_next_monster = None
             else:
+                assert monster is not None
+                self.monster_index += 1
+                self.monsters.append(monster)
                 self.time_for_next_monster += datetime.timedelta(milliseconds=self.config["wave"]["period_ms"])
 
     def remove_dead_monsters(self):
