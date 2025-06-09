@@ -3,9 +3,9 @@ start_gold = 50
 
 [wave]
 period_ms = 1000
-shopping_time_s = 5
+shopping_time_s = 120
 
-[level3]
+[level1]
 waves = ["GG", "GGGG", "GGGGGGGG"]
 map = "terrain.txt"
 gold = 30
@@ -17,7 +17,7 @@ map = "terrain2.txt"
 gold = 50
 towers = ["SM"]
 
-[level1]
+[level3]
 waves = ["OOO",  "OOOO", "OOOOOOOO"]
 map = "terrain3.txt"
 gold = 30

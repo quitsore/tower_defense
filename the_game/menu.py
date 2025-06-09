@@ -6,7 +6,7 @@ import tomllib
 
 
 class MenuTile:
-    def __init__(self, number, screen, block, x, y, size, text_font, col, row, image, last_lvl_unlock):
+    def __init__(self, number, screen, block, x, y, size, text_font, col, row, image, is_unlocked):
         self.btn = None
         self.number = number
         self.rect = pygame.Rect(x, y, image.get_width(), image.get_height())
@@ -20,14 +20,13 @@ class MenuTile:
         self.cover.fill((255, 255, 255))
         self.cover.set_alpha(100)
         self.is_clicked = False
-        self.last_lvl_unlocked = last_lvl_unlock
+        self.is_unlocked = is_unlocked
 
     def action(self):
         pass
 
-    def on_mouse_clicked_down(self, mouse_pos: Point) -> bool:
-        self.is_clicked = self.rect.collidepoint(mouse_pos.x, mouse_pos.y)
-        return self.is_clicked
+    def on_mouse_clicked_down(self):
+        self.is_clicked = True
 
     def on_mouse_clicked_up(self):
         self.is_clicked = False
@@ -37,13 +36,13 @@ class MenuTile:
         pygame.draw.rect(self.screen, (0, 0, 0),
                          pygame.Rect((self.col + 1) * 90 + self.size * self.col + 5,
                                      (self.row + 1) * 80 + self.size * self.row + 5, self.size, self.size))
-        if self.is_clicked and self.number <= self.last_lvl_unlocked:
+        if self.is_clicked and self.is_unlocked:
             extra = 5
         self.screen.blit(self.block, (self.x + extra, self.y + extra))
         self._draw_text(self.screen, f"{self.number}", self.text_font, (255, 255, 255),
                         (self.col + 1) * 90 + self.size * self.col + self.size / 2 + extra,
                         (self.row + 1) * 80 + self.size * self.row + self.size / 2 + extra)
-        if self.number > self.last_lvl_unlocked:
+        if not self.is_unlocked:
             self.screen.blit(self.cover, (self.rect.x + extra, self.rect.y + extra))
 
     @staticmethod
@@ -76,18 +75,21 @@ class Menu:
         self.config_file = data_dir / "saves.toml"
         print(f"config file {self.config_file}")
         self.config = self.load_data()
-        print(self.config["levels"]["last_unlocked"])
+        if self.config is None:
+            last_unlocked_level = 1
+        else:
+            last_unlocked_level = self.config["levels"]["last_unlocked"]
         self.tiles = []
-        counter = 0
+        level = 0
         self.size = 80
         self.space = 80
         self.left_space = 90
         for row in range(4):
             for col in range(5):
-                counter += 1
+                level += 1
                 x, y = (col + 1) * self.left_space + self.size * col, (row + 1) * self.space + self.size * row
-                menu_tile = MenuTile(counter, self.screen, self.placement, x, y, self.size, self.text_font, col, row,
-                                     self.placement, self.config["levels"]["last_unlocked"])
+                menu_tile = MenuTile(level, self.screen, self.placement, x, y, self.size, self.text_font, col, row,
+                                     self.placement, level <= last_unlocked_level)
                 self.tiles.append(menu_tile)
 
     def load_data(self):
@@ -105,13 +107,12 @@ class Menu:
             if event.type == pygame.QUIT:
                 self.is_work = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                mouse_point = Point(pos[0], pos[1])
                 btn = pygame.mouse.get_pressed(num_buttons=3)
                 if btn[0]:
+                    pos = pygame.mouse.get_pos()
                     for tile in self.tiles:
-                        accepted = tile.on_mouse_clicked_down(mouse_point)
-                        if accepted:
+                        if tile.rect.collidepoint(pos):
+                            tile.on_mouse_clicked_down()
                             self.active_tile = tile
                             break
 

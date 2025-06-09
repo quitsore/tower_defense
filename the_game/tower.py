@@ -82,13 +82,13 @@ class Tower:
 class StoneTower(Tower):
 
     def __init__(self, map_view, images, scene, owner, stone_tower_config, lag):
-        super().__init__(map_view, images, scene, owner, stone_tower_config, lag, 5)
+        super().__init__(map_view, images, scene, owner, stone_tower_config, lag, bullet_lag=5)
 
 
 class MeteorTower(Tower):
 
     def __init__(self, map_view, images, scene, owner, meteor_tower_config, lag):
-        super().__init__(map_view, images, scene, owner, meteor_tower_config, lag, 6)
+        super().__init__(map_view, images, scene, owner, meteor_tower_config, lag, bullet_lag=6)
 
 
 class TowerFactory:

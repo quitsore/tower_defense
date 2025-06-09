@@ -27,9 +27,11 @@ class Item:
         return self.available and self.rect.collidepoint(mouse_click_position.x, mouse_click_position.y)
 
     def draw(self, screen):
-        screen.blit(self.image, (self.rect.x, self.rect.y))
         if not self.available:
-            screen.blit(self.cover, (self.rect.x, self.rect.y))
+            self.image.set_alpha(100)
+        else:
+            self.image.set_alpha(255)
+        screen.blit(self.image, (self.rect.x, self.rect.y))
 
     def __repr__(self):
         return f"item: available = {self.available}, price = {self.price}"
@@ -40,18 +42,19 @@ class Shop:
     def __init__(self, player, towers_config):
         self.items = {
             ItemType.STONE:
-                Item(ItemType.STONE, True, towers_config["stone"]["price"], Point(1055, 150),
-                     pygame.image.load("../resources/stone_tower/stone_turret0.png").convert()),
+                Item(ItemType.STONE, True, towers_config["stone"]["price"], Point(1020, 250),
+                     pygame.image.load("../resources/stone_tower/stone_turret0.png").convert_alpha()),
             ItemType.METEOR:
-                Item(ItemType.METEOR, True, towers_config["meteor"]["price"], Point(1155, 150),
-                     pygame.image.load("../resources/meteor_tower/meteor_turret0.png").convert()),
+                Item(ItemType.METEOR, True, towers_config["meteor"]["price"], Point(1160, 250),
+                     pygame.image.load("../resources/meteor_tower/meteor_turret0.png").convert_alpha()),
             ItemType.FIRE:
                 Item(ItemType.FIRE, False, towers_config["fire"]["price"], Point(1105, 250),
-                     pygame.image.load("../resources/bomb_01.png").convert())}
+                     pygame.image.load("../resources/bomb_01.png").convert_alpha())}
 
-        self.text_font = pygame.font.SysFont("Arial", 30)
+        self.text_font = pygame.font.Font("../resources/MotionControl-Bold.otf", 40)
         self.tower_shop = pygame.image.load("../resources/tower-32x40.png").convert()
         self.bomb_shop = pygame.image.load("../resources/bomb_01.png").convert()
+        self.coin = pygame.image.load("../resources/coin.png").convert_alpha()
         self.player = player
         self.shop_open = False
 
@@ -66,18 +69,20 @@ class Shop:
         return None
 
     def draw(self, screen):
-        self._draw_text(screen, "Tower defense", self.text_font, (255, 255, 255), 1050, 50)
-        self._draw_text(screen, "Stone", self.text_font, (255, 255, 255), 1030, 200)
+        self._draw_text(screen, "Stone", self.text_font, (255, 255, 255), 1050, 330)
         self.items[ItemType.STONE].draw(screen)
         self.items[ItemType.METEOR].draw(screen)
-        self.items[ItemType.FIRE].draw(screen)
-        self._draw_text(screen, "Meteor", self.text_font, (255, 255, 255), 1150, 200)
+        self._draw_text(screen, "Meteor", self.text_font, (255, 255, 255), 1190, 330)
+        self._draw_text(screen, "30", self.text_font, (255, 255, 255), 1060, 365)
+        self._draw_text(screen, "50", self.text_font, (255, 255, 255), 1200, 365)
+        screen.blit(self.coin, (1010, 350))
+        screen.blit(self.coin, (1150, 350))
         #        self._draw_text(screen, "Mortar", self.text_font, (255, 255, 255), 1030, 350)
-        self._draw_text(screen, "Fire", self.text_font, (255, 255, 255), 1150, 350)
-        pygame.draw.line(screen, (255, 255, 255), (1000, 100), (1280, 100), 3)
-        pygame.draw.line(screen, (255, 255, 255), (1000, 400), (1280, 400), 3)
+        pygame.draw.line(screen, (255, 255, 255), (960, 207), (1280, 207), 3)
+        pygame.draw.line(screen, (255, 255, 255), (960, 445), (1280, 445), 3)
 
     @staticmethod
     def _draw_text(screen, text, font, text_col, x, y):
         img = font.render(text, True, text_col)
-        screen.blit(img, (x, y))
+        img_rect = img.get_rect(center=(x, y))
+        screen.blit(img, (img_rect.x, img_rect.y))

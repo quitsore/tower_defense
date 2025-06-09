@@ -94,14 +94,14 @@ class Game:
         self.draw_map()
         self.shop.draw(self.screen)
         # draw side panel
-        self.info_panel.draw(self.screen)
-        self.castle.draw(self.screen)
+        self.info_panel.draw(self.screen, )
         for monster in self.monsters:
             monster.draw(self.screen)
         for tower in self.towers:
             tower.draw(self.screen)
         for bullet in self.bullets:
             bullet.draw(self.screen)
+        self.castle.draw(self.screen)
         # draw dynamics
         if self.transaction:
             self.transaction.draw(self.screen)
@@ -216,6 +216,7 @@ class Game:
             self.draw()
             self.clock.tick(self.FPS)
         print("Game over")
+        pygame.quit()
 
 
 game = Game()
