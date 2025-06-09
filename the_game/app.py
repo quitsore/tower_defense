@@ -1,0 +1,87 @@
+import tomllib
+import tomli_w
+from pathlib import Path
+
+import pygame
+from platformdirs import user_data_dir
+
+from game import Game
+from menu import Menu
+
+FPS = 60
+APP_NAME = "TowerDefense"
+
+class AppConfig:
+
+    def __init__(self, app_name):
+        self.app_name = app_name
+        data_dir = Path(user_data_dir(self.app_name, appauthor=False))
+        data_dir.mkdir(parents=True, exist_ok=True)
+        self.config_file = data_dir / "saves.toml"
+        self.config = self.load_data()
+
+    def load_data(self):
+        if self.config_file.exists():
+            with open(self.config_file, "rb") as f:
+                config = tomllib.load(f)
+                return config
+        else:
+            return {"levels" : {"last_unlocked": 1}}
+
+    def get_last_unlocked_level(self):
+        return self.config["levels"]["last_unlocked"]
+
+    def set_last_unlocked_level(self, level):
+        self.config["levels"]["last_unlocked"] = level
+        toml_str = tomli_w.dumps(self.config)
+        with open(self.config_file, "w", encoding="utf-8") as f:
+            f.write(toml_str)
+
+
+class App:
+    def __init__(self):
+        pygame.init()
+        pygame.mixer.init()
+        self.clock = pygame.time.Clock()
+        self.width, self.height = 1280, 720
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        self.background = pygame.surface.Surface([self.width, self.height])
+        self.background.fill((0, 0, 0))
+        self.app_config = AppConfig(APP_NAME)
+        self.menu = Menu(screen=self.screen)
+        self.game = None
+        self.activity = self.menu
+        self.activity.on_activate(level=self.app_config.get_last_unlocked_level())
+
+    def select_activity(self):
+        if self.activity.is_completed:
+            if type(self.activity) is Menu:
+                print(f"selected {self.activity.selected_level}")
+                level = self.activity.selected_level
+                # self.activity = self.game
+            elif type(self.activity) is Game:
+                pass
+
+    def check_events(self):
+        return self.activity.check_events()
+
+    def action(self):
+        self.activity.action()
+
+    def draw(self):
+        self.screen.blit(self.background, (0, 0))
+        self.activity.draw()
+        pygame.display.update()
+
+    def run(self):
+        while True:
+            self.select_activity()
+            if not self.check_events():
+                break
+            self.action()
+            self.draw()
+            self.clock.tick(FPS)
+        pygame.quit()
+
+app = App()
+app.run()

@@ -34,7 +34,6 @@ class Game:
         self.grass = pygame.image.load("../resources/grass-60x60.png").convert()
         self.placement = pygame.image.load("../resources/brick2-60x60.png").convert()
         self.cursorPX, self.curserPY = self.width // 2, self.height // 2
-        self.clock = pygame.time.Clock()
         self.is_work = True
         self.timer = None
         self.FPS = 60
@@ -127,6 +126,8 @@ class Game:
                 print(f"mouse clicked: {self.mouse_click_point}")
 
     def action(self):
+        self.remove_dead_monsters()
+        self.spawn_monster()
         if len(self.monsters) == 0:
             if not self.shop_open:
                 self.shop_open = True
@@ -210,14 +211,9 @@ class Game:
     def run(self):
         while self.is_work:
             self.check_events()
-            self.remove_dead_monsters()
-            self.spawn_monster()
             self.action()
             self.draw()
             self.clock.tick(self.FPS)
         print("Game over")
         pygame.quit()
 
-
-game = Game()
-game.run()
