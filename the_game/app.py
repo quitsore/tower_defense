@@ -58,10 +58,14 @@ class App:
         self.activity = self.menu
         self.activity.on_activate(level=self.app_config.get_last_unlocked_level())
         self.current_level = None
+        self.played = False
 
     def select_activity(self):
         if self.activity.is_completed:
+            pygame.mixer.music.unload()
+            self.played = False
             if type(self.activity) is Menu:
+                pygame.mixer.music.load("../resources/battle_music.mp3")
                 self.current_level = self.activity.selected_level
                 level = self.current_level
                 self.activity = self.game
@@ -71,6 +75,7 @@ class App:
                     self.current_level = None
                 level = self.app_config.get_last_unlocked_level()
                 self.activity = self.menu
+                pygame.mixer.music.load("../resources/menu_track.mp3")
             else:
                 raise NotImplementedError()
             self.activity.on_activate(level)
@@ -80,6 +85,15 @@ class App:
 
     def action(self):
         self.activity.action()
+        self.play_music()
+
+    def play_music(self):
+        if not pygame.mixer.music.get_busy() and not self.played:
+            pygame.mixer.music.play()
+            self.played = True
+        elif not pygame.mixer.music.get_busy():
+            pygame.mixer.music.play()
+            pygame.mixer.music.set_pos(9.624)
 
     def draw(self):
         self.screen.blit(self.background, (0, 0))

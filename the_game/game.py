@@ -62,6 +62,7 @@ class Game:
         level_tag = f"level{level}"
         if level_tag in self.config:
             level_cfg = self.config[level_tag]
+            self.player.gold = level_cfg["gold"]
             self.game_map = Map(level_cfg["map"])
             self.spawn_point = self.game_map.find_spawn_point()
             castle_loc = self.game_map.find_castle_place()

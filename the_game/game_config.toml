@@ -8,83 +8,121 @@ shopping_time_s = 5
 [level1]
 waves = ["GG", "GGGG", "GGGGGGGG"]
 map = "terrain.txt"
-gold = 30
+gold = 40
 towers = ["S"]
 
 [level2]
-waves = ["GGGG", "GGGGGGGG"]
+waves = ["GGG", "GGGGGG", "GGGGGGGGGGG"]
 map = "terrain2.txt"
-gold = 50
+gold = 60
 towers = ["SM"]
 
 [level3]
 waves = ["OOO",  "OOOO", "OOOOOOOO"]
 map = "terrain3.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level4]
 waves = ["OOO", "OOGO", "GOOGO"]
 map = "terrain4.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level5]
 waves = ["OGOGOG",  "OOOGOO", "GGGOGGG"]
 map = "terrain5.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level6]
 waves = ["SSS",  "SGSSS", "OSSS"]
 map = "terrain6.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level7]
 waves = ["SGOOGSS",  "SSOGOSS", "G"]
 map = "terrain7.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level8]
 waves = ["OOOGGSSSSG",  "GOOOOOSSSSOO"]
 map = "terrain8.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level9]
 waves = ["",  ""]
 map = "terrain9.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level10]
 waves = ["",  ""]
 map = "terrain10.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level11]
 waves = ["",  ""]
 map = "terrain11.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level12]
 waves = ["",  ""]
 map = "terrain12.txt"
-gold = 30
+gold = 50
 towers = ["SM"]
 
 [level13]
 waves = ["",  ""]
 map = "terrain13.txt"
+gold = 50
 towers = ["SM"]
 
 [level14]
 waves = ["",  ""]
 map = "terrain14.txt"
+gold = 50
+towers = ["SM"]
+
+[level15]
+waves = ["",  ""]
+map = "terrain15.txt"
+gold = 50
+towers = ["SM"]
+
+[level16]
+waves = ["",  ""]
+map = "terrain16.txt"
+gold = 50
+towers = ["SM"]
+
+[level17]
+waves = ["",  ""]
+map = "terrain17.txt"
+gold = 50
+towers = ["SM"]
+
+[level18]
+waves = ["",  ""]
+map = "terrain18.txt"
+gold = 50
+towers = ["SM"]
+
+[level19]
+waves = ["",  ""]
+map = "terrain19.txt"
+gold = 50
+towers = ["SM"]
+
+[level20]
+waves = ["",  ""]
+map = "terrain20.txt"
+gold = 50
 towers = ["SM"]
 
 [towers]
@@ -96,7 +134,7 @@ price = 30
 after_wave = 0
 
 [towers.meteor]
-damage = 5
+damage = 6
 attack_speed_ms = 15
 range = 3
 price = 50
@@ -112,16 +150,16 @@ after_wave = 5
 [monsters]
 [monsters.goblin]
 speed = 1.5
-damage = 10
-attack_speed = 80
+damage = 3
+attack_speed = 27
 health = 30
 value = 10
 
 [monsters.orc]
 speed = 1
-damage = 15
-attack_speed = 100
-health = 50
+damage = 4
+attack_speed = 27
+health = 70
 value = 20
 
 [monsters.spider]

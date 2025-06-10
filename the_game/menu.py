@@ -99,6 +99,7 @@ class Menu:
     def on_selected(self, level):
         self.selected_level = level
         self.is_completed = True
+        self.played = False
 
     def action(self):
         self.play_music()

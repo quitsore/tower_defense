@@ -13,6 +13,7 @@ class InfoPanel:
         self.text_font = pygame.font.Font("../resources/MotionControl-Bold.otf", 40)
         self.logo = pygame.image.load("../resources/game_title.png").convert()
         self.coin = pygame.image.load("../resources/coin.png").convert_alpha()
+        self.heart = pygame.image.load("../resources/castle_hp.png").convert_alpha()
         self.player_gold = None
         self.player = player
         self.castle = castle
@@ -52,7 +53,8 @@ class InfoPanel:
         self._draw_text(screen, f"{self.player.gold}", self.text_font, (255, 255, 255), 1200, 480)
         screen.blit(self.coin, (1150, 465))
         self._draw_text(screen, "Level: 1", self.text_font, (255, 255, 255), 1040, 480)
-        self._draw_text(screen, f"castle_hp: {self.castle_hp}", self.text_font, (255, 255, 255), 1100, 550)
+        screen.blit(self.heart, (1030, 535))
+        self._draw_text(screen, f"{self.castle_hp}", self.text_font, (255, 255, 255), 1100, 550)
 
     @staticmethod
     def _draw_text(screen, text, font, text_col, x, y):
