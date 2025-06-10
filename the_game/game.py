@@ -165,6 +165,7 @@ class Game:
         self.castle.action()
         if self.castle.is_destroyed():
             self.game_over(succeeded=False)
+            self.info_panel.action()
 
     def draw_map(self):
         for row_idx, row in enumerate(self.game_map.map):

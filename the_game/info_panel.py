@@ -46,15 +46,15 @@ class InfoPanel:
             remaining_time_seconds = self.remaining_time.seconds + 1
         else:
             remaining_time_seconds = 0
-        self._draw_text(screen, f"{remaining_time_seconds}", self.text_font, (255, 255, 255), 1040, 630)
+        self._draw_text(screen, f"{remaining_time_seconds}", self.text_font, (255, 255, 255), 1090, 550)
         if self.end_angle > self.start_angle:
-            pygame.draw.arc(screen, (255, 255, 255), pygame.Rect(1012, 600, 60, 60), self.start_angle,
+            pygame.draw.arc(screen, (255, 255, 255), pygame.Rect(1062, 520, 60, 60), self.start_angle,
                             self.end_angle, 3)
         self._draw_text(screen, f"{self.player.gold}", self.text_font, (255, 255, 255), 1200, 480)
         screen.blit(self.coin, (1150, 465))
         self._draw_text(screen, "Level: 1", self.text_font, (255, 255, 255), 1040, 480)
-        screen.blit(self.heart, (1030, 535))
-        self._draw_text(screen, f"{self.castle_hp}", self.text_font, (255, 255, 255), 1100, 550)
+        screen.blit(self.heart, (1150, 535))
+        self._draw_text(screen, f"{self.castle_hp}", self.text_font, (255, 255, 255), 1215, 550)
 
     @staticmethod
     def _draw_text(screen, text, font, text_col, x, y):
