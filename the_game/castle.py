@@ -36,6 +36,7 @@ class Castle:
 
     def get_hit(self, damage):
         self.health -= damage
+
         print("ouch")
 
     def draw(self, screen):

@@ -15,7 +15,8 @@ class InfoPanel:
         self.coin = pygame.image.load("../resources/coin.png").convert_alpha()
         self.player_gold = None
         self.player = player
-        self.castle_hp = 0
+        self.castle = castle
+        self.castle_hp = castle.health
         self.start_time = datetime.datetime.now()
         self.total_duration = datetime.timedelta(days=-1)
         self.remaining_time = datetime.timedelta(days=-1)
@@ -28,6 +29,7 @@ class InfoPanel:
         self.end_angle = self.start_angle + math.radians(360)
 
     def action(self):
+        self.castle_hp = self.castle.health
         if self.remaining_time.days >= 0:
             now = datetime.datetime.now()
             self.remaining_time = self.start_time + self.total_duration - now
@@ -50,6 +52,7 @@ class InfoPanel:
         self._draw_text(screen, f"{self.player.gold}", self.text_font, (255, 255, 255), 1200, 480)
         screen.blit(self.coin, (1150, 465))
         self._draw_text(screen, "Level: 1", self.text_font, (255, 255, 255), 1040, 480)
+        self._draw_text(screen, f"castle_hp: {self.castle_hp}", self.text_font, (255, 255, 255), 1100, 550)
 
     @staticmethod
     def _draw_text(screen, text, font, text_col, x, y):

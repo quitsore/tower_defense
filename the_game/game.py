@@ -1,4 +1,5 @@
 import logging
+from copy import deepcopy
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,27 +21,17 @@ import tomllib
 
 class Game:
 
-    def __init__(self):
+    def __init__(self, screen):
         self.mouse_cursor_image = None
-        self.background = None
         self.config = None
         with open("game_config.toml", mode="rb") as fp:
             self.config = tomllib.load(fp)
-        pygame.init()
-        self.width, self.height = 1280, 720
-        self.screen = pygame.display.set_mode((self.width, self.height))
-        pygame.display.set_caption("Tower defense")
+        self.screen = screen
         self.path = pygame.image.load("../resources/brick-60x60.png").convert()
         self.grass = pygame.image.load("../resources/grass-60x60.png").convert()
         self.placement = pygame.image.load("../resources/brick2-60x60.png").convert()
-        self.cursorPX, self.curserPY = self.width // 2, self.height // 2
-        self.is_work = True
-        self.timer = None
-        self.FPS = 60
         self.game_map = None
         self.spawn_point = None
-        self.background = pygame.surface.Surface([self.width, self.height])
-        self.background.fill((0, 0, 0))
         self.player = Player(self.config["player"]["start_gold"])
         self.scene = Scene(cell_width=60, cell_height=60)
         self.monster_factory = MonsterFactory(self.scene, self.config["monsters"])
@@ -54,17 +45,21 @@ class Game:
         self.mouse_click_point = None
         self.mouse_point = None
         self.shop = Shop(self.player, self.config["towers"])
-        self.text_font = pygame.font.SysFont("Arial", 30)
-        self.info_panel = InfoPanel(self.player, self.screen)
+        self.info_panel = None
         self.transaction = None
         self.shop_open = False
         self.waves = None
         self.wave = None
-        self.level_id = 0
+        self.is_completed = False
+        self.succeeded = False
 
-    def load_next_level(self):
-        self.level_id += 1
-        level_tag = f"level{self.level_id}"
+    def on_activate(self, level):
+        self.is_completed = False
+        self.succeeded = False
+        self.load_next_level(level)
+
+    def load_next_level(self, level):
+        level_tag = f"level{level}"
         if level_tag in self.config:
             level_cfg = self.config[level_tag]
             self.game_map = Map(level_cfg["map"])
@@ -72,23 +67,21 @@ class Game:
             castle_loc = self.game_map.find_castle_place()
             self.castle = Castle(MapView(self.game_map, castle_loc, width=1, height=1),
                                  color=pygame.Color(0, 215, 0), scene=self.scene, castle_config=self.config)
-            self.waves = level_cfg["waves"]
+            self.info_panel = InfoPanel(self.player, self.screen, self.castle)
+            self.waves = deepcopy(level_cfg["waves"])
             self.wave = None
             self.towers = []
-        else:
-            logging.warning("YOU COMPLETED ALL LEVELS")
-            exit(0)
+            self.monsters = []
 
     def take_next_wave(self):
         wave = None
+        print(self.waves)
         if self.waves:
             wave = self.waves[0]
-            self.waves = self.waves[1:]
+            self.waves.pop(0)
         return wave
 
     def draw(self):
-        # clear screen
-        self.screen.blit(self.background, (0, 0))
         # draw map
         self.draw_map()
         self.shop.draw(self.screen)
@@ -105,25 +98,20 @@ class Game:
         if self.transaction:
             self.transaction.draw(self.screen)
 
-        # show fps
-        self.show_fps()
-        # pygame.display.flip()
-        pygame.display.update()
-
     def check_events(self):
         self.mouse_click_point = None
         mouse_pos = pygame.mouse.get_pos()
         self.mouse_point = Point(mouse_pos[0], mouse_pos[1])
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.is_work = False
+                return False
             if event.type == pygame.MOUSEBUTTONDOWN:
                 btn = pygame.mouse.get_pressed(num_buttons=3)
                 if btn[0]:
                     self.mouse_click_point = self.mouse_point
                 if btn[2] and self.transaction:
                     self.transaction = None
-                print(f"mouse clicked: {self.mouse_click_point}")
+        return True
 
     def action(self):
         self.remove_dead_monsters()
@@ -132,9 +120,10 @@ class Game:
             if not self.shop_open:
                 self.shop_open = True
                 self.info_panel.init_counter(self.config["wave"]["shopping_time_s"])
-                if not self.waves:
-                    self.load_next_level()
                 self.wave = self.take_next_wave()
+                if not self.wave:
+                    self.succeeded = True
+                    self.is_completed = True
         if not self.transaction:
             item = self.shop.action(mouse_click_point=self.mouse_click_point, shop_open=self.shop_open)
             if item:
@@ -158,7 +147,7 @@ class Game:
             bullet.action()
         self.castle.action()
         if self.castle.is_destroyed():
-            self.is_work = False
+            self.is_completed = True
 
     def draw_map(self):
         color = None
@@ -173,11 +162,6 @@ class Game:
                                      (col_idx * self.scene.cell_width, row_idx * self.scene.cell_height))
                 elif cell.tag == Tag.SPAWN_POINT:
                     self.screen.blit(self.path, (col_idx * self.scene.cell_width, row_idx * self.scene.cell_height))
-
-    def show_fps(self):
-        fps = int(self.clock.get_fps())
-        show_fps = self.text_font.render(str(fps), True, (255, 255, 255))
-        self.screen.blit(show_fps, (0, 0))
 
     def spawn_monster(self):
         now = datetime.datetime.now()
@@ -207,13 +191,3 @@ class Game:
             if monster.state == State.DEATH:
                 self.player.gold += monster.gold_value
                 self.monsters.remove(monster)
-
-    def run(self):
-        while self.is_work:
-            self.check_events()
-            self.action()
-            self.draw()
-            self.clock.tick(self.FPS)
-        print("Game over")
-        pygame.quit()
-

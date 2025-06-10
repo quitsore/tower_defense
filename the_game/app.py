@@ -11,6 +11,7 @@ from menu import Menu
 FPS = 60
 APP_NAME = "TowerDefense"
 
+
 class AppConfig:
 
     def __init__(self, app_name):
@@ -26,7 +27,7 @@ class AppConfig:
                 config = tomllib.load(f)
                 return config
         else:
-            return {"levels" : {"last_unlocked": 1}}
+            return {"levels": {"last_unlocked": 1}}
 
     def get_last_unlocked_level(self):
         return self.config["levels"]["last_unlocked"]
@@ -36,6 +37,10 @@ class AppConfig:
         toml_str = tomli_w.dumps(self.config)
         with open(self.config_file, "w", encoding="utf-8") as f:
             f.write(toml_str)
+
+    def level_completed(self, level):
+        if level == self.get_last_unlocked_level():
+            self.set_last_unlocked_level(level + 1)
 
 
 class App:
@@ -49,18 +54,26 @@ class App:
         self.background.fill((0, 0, 0))
         self.app_config = AppConfig(APP_NAME)
         self.menu = Menu(screen=self.screen)
-        self.game = None
+        self.game = Game(screen=self.screen)
         self.activity = self.menu
         self.activity.on_activate(level=self.app_config.get_last_unlocked_level())
+        self.current_level = None
 
     def select_activity(self):
         if self.activity.is_completed:
             if type(self.activity) is Menu:
-                print(f"selected {self.activity.selected_level}")
-                level = self.activity.selected_level
-                # self.activity = self.game
+                self.current_level = self.activity.selected_level
+                level = self.current_level
+                self.activity = self.game
             elif type(self.activity) is Game:
-                pass
+                if self.activity.succeeded:
+                    self.app_config.level_completed(self.current_level)
+                    self.current_level = None
+                level = self.app_config.get_last_unlocked_level()
+                self.activity = self.menu
+            else:
+                raise NotImplementedError()
+            self.activity.on_activate(level)
 
     def check_events(self):
         return self.activity.check_events()
@@ -82,6 +95,7 @@ class App:
             self.draw()
             self.clock.tick(FPS)
         pygame.quit()
+
 
 app = App()
 app.run()
