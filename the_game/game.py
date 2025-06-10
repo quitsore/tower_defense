@@ -5,17 +5,16 @@ logging.basicConfig(level=logging.INFO)
 
 import datetime
 import pygame
-from map import Map, Location, MapView, Tag
-from monster import Monster, Goblin, Orc, MonsterFactory
+from map import Map, MapView, Tag
+from monster import MonsterFactory
 from castle import Castle
-from map import Entity
 from scene import Scene, Point
 from player import Player
 from the_game.info_panel import InfoPanel
-from the_game.monster import State, Spider
+from the_game.monster import State
 from the_game.shop import Shop
 from the_game.transaction import Transaction
-from tower import Tower, TowerFactory
+from tower import TowerFactory
 import tomllib
 
 
@@ -30,6 +29,8 @@ class Game:
         self.path = pygame.image.load("../resources/brick-60x60.png").convert()
         self.grass = pygame.image.load("../resources/grass-60x60.png").convert()
         self.placement = pygame.image.load("../resources/brick2-60x60.png").convert()
+        self.defeat = pygame.image.load("../resources/defeat.png").convert_alpha()
+        self.mission_completed = pygame.image.load("../resources/mission_completed.png").convert_alpha()
         self.game_map = None
         self.spawn_point = None
         self.player = Player(self.config["player"]["start_gold"])
@@ -51,12 +52,18 @@ class Game:
         self.waves = None
         self.wave = None
         self.is_completed = False
+        self.is_game_over = False
         self.succeeded = False
 
     def on_activate(self, level):
         self.is_completed = False
         self.succeeded = False
+        self.is_game_over = False
         self.load_next_level(level)
+
+    def game_over(self, succeeded):
+        self.is_game_over = True
+        self.succeeded = succeeded
 
     def load_next_level(self, level):
         level_tag = f"level{level}"
@@ -98,6 +105,11 @@ class Game:
         # draw dynamics
         if self.transaction:
             self.transaction.draw(self.screen)
+        if self.is_game_over:
+            if self.succeeded:
+                self.screen.blit(self.mission_completed, (224, 200))
+            else:
+                self.screen.blit(self.defeat, (224, 200))
 
     def check_events(self):
         self.mouse_click_point = None
@@ -112,19 +124,23 @@ class Game:
                     self.mouse_click_point = self.mouse_point
                 if btn[2] and self.transaction:
                     self.transaction = None
+                if self.is_game_over:
+                    self.is_completed = True
         return True
 
     def action(self):
+        if self.is_game_over:
+            return
         self.remove_dead_monsters()
         self.spawn_monster()
         if len(self.monsters) == 0:
             if not self.shop_open:
-                self.shop_open = True
-                self.info_panel.init_counter(self.config["wave"]["shopping_time_s"])
                 self.wave = self.take_next_wave()
                 if not self.wave:
-                    self.succeeded = True
-                    self.is_completed = True
+                    self.game_over(succeeded=True)
+                else:
+                    self.shop_open = True
+                    self.info_panel.init_counter(self.config["wave"]["shopping_time_s"])
         if not self.transaction:
             item = self.shop.action(mouse_click_point=self.mouse_click_point, shop_open=self.shop_open)
             if item:
@@ -148,10 +164,9 @@ class Game:
             bullet.action()
         self.castle.action()
         if self.castle.is_destroyed():
-            self.is_completed = True
+            self.game_over(succeeded=False)
 
     def draw_map(self):
-        color = None
         for row_idx, row in enumerate(self.game_map.map):
             for col_idx, cell in enumerate(row):
                 if cell.tag == Tag.FREE:
