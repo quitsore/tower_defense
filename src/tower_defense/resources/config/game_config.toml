@@ -46,44 +46,44 @@ map = "terrain8.txt"
 gold = 100
 
 [level9]
-waves = ["", ""]
+waves = ["SOSSSGSSSS", "OOOOGGGGGSSSSS", "GSOGSSOGOS", "OSGOOGSOSGSOG"]
 map = "terrain9.txt"
-gold = 50
+gold = 110
 
 [level10]
-waves = ["", ""]
+waves = ["GGGGGGGGGGGGG", "SSSSSSSSSSSSSSSSS", "OOOOOOOOOOOOOOOOO"]
 map = "terrain10.txt"
-gold = 50
+gold = 100
 
 [level11]
-waves = ["", ""]
+waves = ["GGGGGGGGGGGSSSS", "OOOOOOOOOGSSGSGSGSGSGSGSGSG"]
 map = "terrain11.txt"
-gold = 50
+gold = 140
 
 [level12]
-waves = ["", ""]
+waves = ["GGGGOOOOGOGOGOOSSSSGGG", "SGOSGOSGOSGOSGOSGOGOSOGSOGOSOGOSOOSGOSGOSOGSOGOS"]
 map = "terrain12.txt"
-gold = 50
+gold = 210
 
 [level13]
-waves = ["", ""]
+waves = ["SGOGOSSGOSGOGOSOSGOSGOSOGOSOG", "SSSSSSSGGGGOOOOOO"]
 map = "terrain13.txt"
-gold = 50
+gold = 110
 
 [level14]
-waves = ["", ""]
+waves = ["SSSGGSSOOGGOSOSSOOGOSOSGOSGOSGOSG", "OOOOOSOOOOGSSGSGSGSSSGSGSGSGSGOOOOSOOOOOGSSGSGSGSGSSGSGSGSG"]
 map = "terrain14.txt"
-gold = 50
+gold = 180
 
 [level15]
-waves = ["", ""]
+waves = ["GGGGGGGGGGGGGG", "OOGOGGOOGGGOGOGOGO", "OGOOGOOOGOOGGGOGGOG", "SGOOGSSSSOGOSSGGGGOOOGGSSSOGSS"]
 map = "terrain15.txt"
-gold = 50
+gold = 140
 
 [level16]
-waves = ["", ""]
+waves = ["OOOOGOOOOOGOOOSOOOOSGOGOSOGOSGOSOGOGS", "GSOOSOGOSGOOSOOOSOGOSGOGOSSGOSGOOSOGSOGOSGOSGO"]
 map = "terrain16.txt"
-gold = 50
+gold = 160
 
 [level17]
 waves = ["", ""]
@@ -101,9 +101,9 @@ map = "terrain19.txt"
 gold = 50
 
 [level20]
-waves = ["", ""]
+waves = ["OOOOOOOOOGGGGGGGOOOGGGSSSSSSSSSOGOGGGGGOOOOOOSSSSSGOS", "OOOOOOOOOGGGGGGGOOOGGGSSSSSSSSOGOGGGGGOOOGGGSSSSSSSSOGOGGOOOSSSSSGOS"]
 map = "terrain20.txt"
-gold = 50
+gold = 150
 
 [towers]
 [towers.stone]
@@ -140,14 +140,14 @@ speed = 1
 damage = 4
 attack_speed = 27
 health = 70
-value = 20
+value = 15
 
 [monsters.spider]
 speed = 2.5
 damage = 10
 attack_speed = 60
 health = 35
-value = 15
+value = 12
 
 [castle]
 health = 100
