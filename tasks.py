@@ -63,7 +63,10 @@ def winexe(c):
     Bundle a Windows executable via PyInstaller.
     """
     c.run(f"{PYTHON} -m pyinstaller --onefile --name tower_defense "
-          f"--add-data \"resources;resources\" src/tower_defense/app.py")
+          f"--icon installer/icon.ico "
+          f"--paths src "
+          f"--add-data \"src/tower defense/resources;resources\" "
+          f"--noconsole run.py")
 
 import tomllib
 
