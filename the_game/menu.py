@@ -65,6 +65,16 @@ class ExitButton:
         screen.blit(self.image, (self.rect.x, self.rect.y))
 
 
+class HelpButton:
+
+    def __init__(self, x, y):
+        self.image = pygame.image.load("../resources/Help_button.png").convert()
+        self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
+
+    def draw(self, screen):
+        screen.blit(self.image, (self.rect.x, self.rect.y))
+
+
 class Menu:
     def __init__(self, screen):
         self.screen = screen
@@ -73,6 +83,7 @@ class Menu:
         self.text_font_project = pygame.font.Font("../resources/DAGGERSQUARE.otf", 22)
         self.logo = pygame.image.load("../resources/Title.png").convert()
         self.exit_button = ExitButton(1040, 580)
+        self.help_button = HelpButton(1040, 480)
         self.active_tile = None
         self.played = False
         self.tiles = []
@@ -82,6 +93,7 @@ class Menu:
         self.left_space = 90
         self.is_completed = False
         self.selected_level = None
+        self.show_help = False
         for row in range(4):
             for col in range(5):
                 level += 1
@@ -112,13 +124,18 @@ class Menu:
                 btn = pygame.mouse.get_pressed(num_buttons=3)
                 if btn[0]:
                     pos = pygame.mouse.get_pos()
-                    if self.exit_button.rect.collidepoint(pos):
+                    if self.show_help:
+                        self.show_help = False
+                    elif self.exit_button.rect.collidepoint(pos):
                         return False
-                    for tile in self.tiles:
-                        if tile.rect.collidepoint(pos):
-                            tile.on_mouse_clicked_down()
-                            self.active_tile = tile
-                            break
+                    elif self.help_button.rect.collidepoint(pos):
+                        self.show_help = True
+                    else:
+                        for tile in self.tiles:
+                            if tile.rect.collidepoint(pos):
+                                tile.on_mouse_clicked_down()
+                                self.active_tile = tile
+                                break
 
             if event.type == pygame.MOUSEBUTTONUP:
                 if self.active_tile:
@@ -131,10 +148,13 @@ class Menu:
     def draw(self):
         pygame.draw.rect(self.screen, (0, 255, 0), pygame.Rect(0, 0, 960, 720))
         self.draw_levels()
+        self.help_button.draw(self.screen)
         self.exit_button.draw(self.screen)
         self.screen.blit(self.logo, (960, 0))
         self._draw_text(self.screen, "A school project", self.text_font_project, (255, 255, 255), 1120, 340)
         self._draw_text(self.screen, "by Robert Seifert", self.text_font_project, (255, 255, 255), 1120, 365)
+        if self.show_help:
+            self._draw_text(self.screen, "Help!", self.text_font_project, (255, 255, 255), 120, 340)
 
     def draw_levels(self):
         for tile in self.tiles:

@@ -1,9 +1,14 @@
 import enum
+import logging
+
 import pygame
 import math
 
 from the_game.map import MapView, Location
 from the_game.scene import Offset, Scene, Point
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class State(enum.IntEnum):
@@ -27,6 +32,7 @@ class Bullet:
         self.strike_counter = len(self.images["explosion"]) * self.lag - self.lag
 
     def _transit(self, new_state):
+        logger.info(f"Transiting from {self.state.name} to {new_state.name}")
         self.state = new_state
         if new_state == State.STRIKING:
             self.target.get_hit(self.damage)
@@ -52,6 +58,7 @@ class Bullet:
         if self.state == State.FLYING:
             screen.blit(self.images["bullet"], (self.point.x, self.point.y))
         elif self.state == State.STRIKING:
+            logging.info(f"bullet: {self.draw_counter}, {self.lag}, {self.strike_counter}")
             screen.blit(self.images["explosion"][self.draw_counter // self.lag], (self.point.x, self.point.y))
 
     def calculate_next_point(self) -> Point:

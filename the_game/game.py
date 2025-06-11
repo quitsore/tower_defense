@@ -28,7 +28,7 @@ class Game:
         self.screen = screen
         self.path = pygame.image.load("../resources/brick-60x60.png").convert()
         self.grass = pygame.image.load("../resources/grass-60x60.png").convert()
-        self.placement = pygame.image.load("../resources/brick2-60x60.png").convert()
+        self.placement = pygame.image.load("../resources/brick3-60x60.png").convert()
         self.defeat = pygame.image.load("../resources/defeat.png").convert_alpha()
         self.mission_completed = pygame.image.load("../resources/mission_completed.png").convert_alpha()
         self.game_map = None
@@ -64,6 +64,8 @@ class Game:
     def game_over(self, succeeded):
         self.is_game_over = True
         self.succeeded = succeeded
+        self.info_panel.action()
+        self.bullets = []
 
     def load_next_level(self, level):
         level_tag = f"level{level}"
@@ -75,7 +77,7 @@ class Game:
             castle_loc = self.game_map.find_castle_place()
             self.castle = Castle(MapView(self.game_map, castle_loc, width=1, height=1),
                                  color=pygame.Color(0, 215, 0), scene=self.scene, castle_config=self.config)
-            self.info_panel = InfoPanel(self.player, self.screen, self.castle)
+            self.info_panel = InfoPanel(self.player, self.screen, self.castle, level)
             self.waves = deepcopy(level_cfg["waves"])
             self.wave = None
             self.towers = []
@@ -94,7 +96,7 @@ class Game:
         self.draw_map()
         self.shop.draw(self.screen)
         # draw side panel
-        self.info_panel.draw(self.screen, )
+        self.info_panel.draw(self.screen)
         for monster in self.monsters:
             monster.draw(self.screen)
         for tower in self.towers:

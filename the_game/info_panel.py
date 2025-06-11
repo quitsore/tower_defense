@@ -6,7 +6,7 @@ import pygame
 
 
 class InfoPanel:
-    def __init__(self, player, screen, castle):
+    def __init__(self, player, screen, castle, level):
         self.screen = screen
         self.start_angle = math.radians(90)
         self.end_angle = self.start_angle + math.radians(360)
@@ -21,6 +21,7 @@ class InfoPanel:
         self.start_time = datetime.datetime.now()
         self.total_duration = datetime.timedelta(days=-1)
         self.remaining_time = datetime.timedelta(days=-1)
+        self.level = level
 
     def init_counter(self, new_duration_s):
         self.start_time = datetime.datetime.now()
@@ -52,7 +53,7 @@ class InfoPanel:
                             self.end_angle, 3)
         self._draw_text(screen, f"{self.player.gold}", self.text_font, (255, 255, 255), 1200, 480)
         screen.blit(self.coin, (1150, 465))
-        self._draw_text(screen, "Level: 1", self.text_font, (255, 255, 255), 1040, 480)
+        self._draw_text(screen, f"Level: {self.level}", self.text_font, (255, 255, 255), 1040, 480)
         screen.blit(self.heart, (1150, 535))
         self._draw_text(screen, f"{self.castle_hp}", self.text_font, (255, 255, 255), 1215, 550)
 
