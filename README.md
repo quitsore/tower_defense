@@ -1,2 +1,3 @@
-# tower_defense
-tower_defense
+# Tower Defense
+
+This is a school project made by Robert Seifert
