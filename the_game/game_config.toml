@@ -9,121 +9,101 @@ shopping_time_s = 10
 waves = ["GG", "GGGG", "GGGGGGGG"]
 map = "terrain.txt"
 gold = 40
-towers = ["S"]
 
 [level2]
 waves = ["GGG", "GGGGGG", "GGGGGGGGGGG"]
 map = "terrain2.txt"
 gold = 60
-towers = ["SM"]
 
 [level3]
-waves = ["OOO",  "OOOO", "OOOOOOOO"]
+waves = ["OOO", "OOOO", "OOOOOOOO"]
 map = "terrain3.txt"
 gold = 50
-towers = ["SM"]
 
 [level4]
-waves = ["OOO", "OOGO", "GOOGO"]
+waves = ["OOGO", "GGOOGG", "GOGOGOGO"]
 map = "terrain4.txt"
-gold = 50
-towers = ["SM"]
+gold = 80
 
 [level5]
-waves = ["OGOGOG",  "OOOGOO", "GGGOGGG"]
+waves = ["OGOOG", "OOOGOO", "GGGOGGOG"]
 map = "terrain5.txt"
-gold = 50
-towers = ["SM"]
+gold = 80
 
 [level6]
-waves = ["SSS",  "SGSSS", "OSSS"]
+waves = ["SSS", "SGSSS", "OSSS"]
 map = "terrain6.txt"
 gold = 50
-towers = ["SM"]
 
 [level7]
-waves = ["SGOOGSS",  "SSOGOSS", "G"]
+waves = ["SGOOGSS", "SSOGOSS", "G", "GGGOOOGGSSSOGSS"]
 map = "terrain7.txt"
 gold = 50
-towers = ["SM"]
 
 [level8]
-waves = ["OOOGGSSSSG",  "GOOOOOSSSSOO"]
+waves = ["OGSOGSOGSO", "GOOOOOSSSSOO", "OOOGGSSSSG"]
 map = "terrain8.txt"
-gold = 50
-towers = ["SM"]
+gold = 100
 
 [level9]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain9.txt"
 gold = 50
-towers = ["SM"]
 
 [level10]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain10.txt"
 gold = 50
-towers = ["SM"]
 
 [level11]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain11.txt"
 gold = 50
-towers = ["SM"]
 
 [level12]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain12.txt"
 gold = 50
-towers = ["SM"]
 
 [level13]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain13.txt"
 gold = 50
-towers = ["SM"]
 
 [level14]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain14.txt"
 gold = 50
-towers = ["SM"]
 
 [level15]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain15.txt"
 gold = 50
-towers = ["SM"]
 
 [level16]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain16.txt"
 gold = 50
-towers = ["SM"]
 
 [level17]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain17.txt"
 gold = 50
-towers = ["SM"]
 
 [level18]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain18.txt"
 gold = 50
-towers = ["SM"]
 
 [level19]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain19.txt"
 gold = 50
-towers = ["SM"]
 
 [level20]
-waves = ["",  ""]
+waves = ["", ""]
 map = "terrain20.txt"
 gold = 50
-towers = ["SM"]
 
 [towers]
 [towers.stone]
@@ -166,7 +146,7 @@ value = 20
 speed = 2.5
 damage = 10
 attack_speed = 60
-health = 20
+health = 35
 value = 15
 
 [castle]
