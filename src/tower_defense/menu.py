@@ -67,10 +67,14 @@ class HelpButton:
 
     def __init__(self, x, y):
         self.image = pygame.image.load(IMAGES_DIR / "Help_button.png").convert()
+        self.text = pygame.image.load(IMAGES_DIR / "help_text.png").convert()
         self.rect = pygame.Rect(x, y, self.image.get_width(), self.image.get_height())
 
     def draw(self, screen):
         screen.blit(self.image, (self.rect.x, self.rect.y))
+
+    def draw_description(self, screen):
+        screen.blit(self.text, (165, 35))
 
 
 class Menu:
@@ -152,7 +156,7 @@ class Menu:
         self._draw_text(self.screen, "A school project", self.text_font_project, (255, 255, 255), 1120, 340)
         self._draw_text(self.screen, "by Robert Seifert", self.text_font_project, (255, 255, 255), 1120, 365)
         if self.show_help:
-            self._draw_text(self.screen, "Help!", self.text_font_project, (255, 255, 255), 120, 340)
+            self.help_button.draw_description(self.screen)
 
     def draw_levels(self):
         for tile in self.tiles:
