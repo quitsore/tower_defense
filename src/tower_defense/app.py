@@ -47,6 +47,7 @@ class AppConfig:
 class App:
     def __init__(self):
         pygame.init()
+        pygame.display.set_caption("Tower Defense")
         pygame.mixer.init()
         self.clock = pygame.time.Clock()
         self.width, self.height = 1280, 720
