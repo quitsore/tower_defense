@@ -112,5 +112,10 @@ class App:
         pygame.quit()
 
 
-app = App()
-app.run()
+def main():
+    app = App()
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
