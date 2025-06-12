@@ -47,7 +47,9 @@ class AppConfig:
 
     def level_completed(self, level):
         if level == self.get_last_unlocked_level():
-            self.set_last_unlocked_level(level + 1)
+            next_level = f"level{level}"
+            if next_level in self.game_config:
+                self.set_last_unlocked_level(level + 1)
 
 
 class App:
