@@ -19,24 +19,30 @@ class AppConfig:
         self.app_name = app_name
         data_dir = Path(user_data_dir(self.app_name, appauthor=False))
         data_dir.mkdir(parents=True, exist_ok=True)
-        self.config_file = data_dir / "saves.toml"
-        self.config = self.load_data()
+        self.save_config_file = data_dir / "saves.toml"
+        self.save_config = self.load_save_config()
+        self.game_config = self.load_game_config()
 
-    def load_data(self):
-        if self.config_file.exists():
-            with open(self.config_file, "rb") as f:
+    def load_save_config(self):
+        if self.save_config_file.exists():
+            with open(self.save_config_file, "rb") as f:
                 config = tomllib.load(f)
                 return config
         else:
             return {"levels": {"last_unlocked": 1}}
 
+    def load_game_config(self):
+        with open(CONFIG_DIR / "game_config.toml", mode="rb") as fp:
+            game_config = tomllib.load(fp)
+            return game_config
+
     def get_last_unlocked_level(self):
-        return self.config["levels"]["last_unlocked"]
+        return self.save_config["levels"]["last_unlocked"]
 
     def set_last_unlocked_level(self, level):
-        self.config["levels"]["last_unlocked"] = level
-        toml_str = tomli_w.dumps(self.config)
-        with open(self.config_file, "w", encoding="utf-8") as f:
+        self.save_config["levels"]["last_unlocked"] = level
+        toml_str = tomli_w.dumps(self.save_config)
+        with open(self.save_config_file, "w", encoding="utf-8") as f:
             f.write(toml_str)
 
     def level_completed(self, level):
@@ -56,7 +62,7 @@ class App:
         self.background.fill((0, 0, 0))
         self.app_config = AppConfig(APP_NAME)
         self.menu = Menu(screen=self.screen)
-        self.game = Game(screen=self.screen)
+        self.game = Game(screen=self.screen, config=self.app_config.game_config)
         self.activity = self.menu
         self.activity.on_activate(level=self.app_config.get_last_unlocked_level())
         self.current_level = None

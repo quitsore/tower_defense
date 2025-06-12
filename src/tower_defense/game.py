@@ -20,11 +20,9 @@ from .paths import *
 
 class Game:
 
-    def __init__(self, screen):
+    def __init__(self, screen, config):
         self.mouse_cursor_image = None
-        self.config = None
-        with open(CONFIG_DIR / "game_config.toml", mode="rb") as fp:
-            self.config = tomllib.load(fp)
+        self.config = config
         self.screen = screen
         self.path = pygame.image.load(IMAGES_DIR / "brick-60x60.png").convert()
         self.grass = pygame.image.load(IMAGES_DIR / "grass-60x60.png").convert()

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tower_defense"
-version = "0.1.0"
+version = "1.0.0"
 description = "A simple Python tower defense game"
 readme = "README.md"
 license = { text = "MIT" }
@@ -15,8 +15,7 @@ dependencies = [
     "setuptools<81",
     "pygame>=2.6.1",
     "platformdirs>=4.3.8",
-    "tomli-w>=1.2.0",
-    "setuptools<81"
+    "tomli-w>=1.2.0"
 ]
 
 [project.optional-dependencies]
