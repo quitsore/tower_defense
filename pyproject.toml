@@ -25,6 +25,7 @@ dev = [
     "pyinstaller",
     "build",
     "twine",
+    "PyInstaller",
 ]
 
 [tool.setuptools]
